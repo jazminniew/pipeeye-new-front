@@ -1,0 +1,106 @@
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: var(--fondo); /* gris oscuro, no lo toques */
+  padding: 12px 40px;
+  border-bottom: 1px solid rgba(78, 78, 78, 0.58);
+  min-height: 70px;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+}
+
+.logoImg {
+  height: 40px;
+  width: auto;
+}
+
+.nombreLogo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: white;
+  font-weight: bold;
+  font-size: 24px;
+  text-decoration: none;
+}
+
+.derecha {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.botones {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.historialLink {
+  display: inline-block;
+  padding: 14px 46px;
+  font-size: 1rem;
+  border-radius: 10px;
+  text-decoration: none;
+  background-color: transparent;
+  border: var(--gris-oscuro) 2px solid;
+  transition: all 0.4s ease;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.historialLink span {
+  color: var(--gris-medio);
+}
+
+.historialLink:hover {
+  background-color: #24252c;
+  border: #6d6d6d 2px solid;
+}
+
+.porfile {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: white;
+}
+
+.porfile img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+}
+
+.infoPorfile p {
+  margin: 0;
+  font-weight: 500;
+}
+
+.rol {
+  font-size: 0.85rem;
+  color: var(--gris-claro);
+  background-color: var(--color-primario);
+  padding: 5px 10px;
+  border-radius: 20px;
+  text-decoration: none;
+  display: inline-block;
+  margin-top: 4px;
+}
+
+.rol:hover {
+  background-color: var(--color-primario-hover);
+  color: #fff;
+  transition: all 0.4s ease;
+}
+
+svg{
+  color: #fff;
+}

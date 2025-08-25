@@ -1,0 +1,164 @@
+:root {
+  --fondo: #1A1B22;
+  --cajas: linear-gradient(127deg, rgba(6, 11, 38, 0.89) 28.26%, rgba(26, 31, 55, 0.50) 91.2%);
+  --color-primario: #3C8CFF;
+  --color-primario-hover: #1d5edc;
+  --blanco: #ffffff;
+  --gris-claro: #ccc;
+  --gris-medio: #999;
+  --gris-oscuro: #444;
+  --glow-color: #006AF1;
+  --fondo-dashboard: #011433;
+
+  /* compactación */
+  --pad-page: 1.25rem;     /* antes 2rem */
+  --gap-lg: 1rem;          /* antes 2rem */
+  --gap-md: 0.75rem;
+
+  /* alturas objetivo */
+  --h-graph-lg: 260px;
+  --h-graph-sm: 220px;
+}
+
+/* body{
+      overflow-y: hidden;
+} */
+
+/* Contenedor principal del dashboard */
+.dashboardContainer {
+  width: 100%;
+  font-family: sans-serif;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: var(--fondo); /* SOLO fondo del header/nav */
+  position: relative;
+}
+
+.dashboardContent {
+  flex: 1;
+  padding: var(--pad-page);
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-lg);
+  position: relative;
+  overflow: hidden;
+  background-color: var(--fondo-dashboard);
+}
+
+.backgroundGlow {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at center, var(--glow-color), transparent 70%);
+  pointer-events: none;
+  transition: background 0.2s ease;
+  z-index: 0;
+  mix-blend-mode: screen;
+}
+
+.header { text-align: left; }
+
+.title {
+  color: var(--blanco);
+  font-weight: 750;
+  font-size: clamp(24px, 2.4vw, 40px);
+  margin: 0 0 6px 0;  /* menos espacio */
+}
+
+.subtitle {
+  margin: 0;
+  color: rgba(247, 248, 249, 0.70);
+  font-size: clamp(12px, 1.4vw, 14px);
+}
+
+/* tarjetas de estadísticas */
+.estadisticas {
+  width: 100%;
+  display: flex;
+  gap: var(--gap-md);
+  align-items: center;
+  justify-content: center;
+}
+
+.caja {
+  background: var(--cajas);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 18px;                 /* antes 30px */
+  border-radius: 16px;           /* antes 20px */
+  color: var(--blanco);
+  font-weight: bold;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  flex: 1;
+  backdrop-filter: blur(16px);   /* antes 30px */
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.number {
+  margin-top: 6px;
+  font-size: clamp(20px, 3vw, 32px);
+  display: flex;
+  justify-content: center;
+}
+
+.dos, .tres, .cuatro {
+  color: var(--color-primario);
+  font-weight: 700;
+}
+
+/* zona de gráficos */
+.infoSecundaria {
+  display: grid;
+  grid-template-columns: 1fr 1.5fr;  /* grande + chico */
+  gap: var(--gap-lg);
+  align-items: stretch;
+}
+
+.containerGrafico,
+.containerGraficoGrande {
+  background: var(--cajas);
+  border-radius: 16px;
+  padding: 1rem;                 /* antes 1.5rem */
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  gap: 0.5rem;                   /* antes 1rem */
+}
+
+/* encabezados de cada gráfico */
+.graphHeader {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-bottom: 0.25rem;
+}
+
+.graphHeader h3 {
+  font-size: clamp(14px, 1.6vw, 18px);
+  color: var(--blanco);
+  margin: 0;
+}
+
+.greenLabel {
+  font-size: clamp(11px, 1.2vw, 13px);
+  color: #00ff9d;
+  font-weight: 500;
+  margin-top: 2px;
+}
+
+.grayLabel {
+  font-size: clamp(11px, 1.2vw, 13px);
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 400;
+  margin-top: 2px;
+}
+
+/* alturas controladas de los gráficos (sin tocar el componente) */
+.graphSizedLg { width: 100%; height: var(--h-graph-lg); }
+.graphSizedSm { width: 100%; height: var(--h-graph-sm); }

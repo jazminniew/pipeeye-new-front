@@ -1,0 +1,55 @@
+:root {
+  /* colores */
+  --color-primario: #2563EB;
+  --color-primario-hover: #296dff;
+  --fondo:rgb(25, 26, 34);
+  --secundario: #fff;
+  --gris-claro: #e0e0e0;
+  --gris-medio: #dbdbdb;
+  --gris-oscuro: #575656;
+  --texto-principal: #414141;
+  --texto-oscuro: #000000;
+  --blanco: #fff;
+  --negro: #000;
+  --caja-background: linear-gradient(127deg, rgba(6, 11, 38, 0.89) 28.26%, rgba(26, 31, 55, 0.50) 91.2%);
+  --caja-blur: blur(32px);
+  --caja-radius: 20px;
+  --verde: #16A34A;
+  --naranja:#D97706;
+  --rojo:#DC2626;
+
+  /* espaciados */
+  --gap-pequeño: 8px;
+  --gap-mediano: 20px;
+  --gap-grande: 40px;
+
+  /* tipografías */
+  --font-base: 'Helvetica Neue', Arial, sans-serif;
+
+  /* bordes y radios */
+  --border-radius-lg: 10px;
+  --border-radius-md: 4px;
+  --border-radius-sm: 2px;
+}
+
+/* 2. Reset / estilos globales básicos */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  width: 100%;
+  height: 100%;
+}
+
+body {
+  background-color: var(--fondo);
+  font-family: var(--font-base);
+  color: var(--texto-oscuro);
+}
+
+
+/* @tailwind directives removed because Tailwind CSS is not configured or not being used */
+/* Add your custom CSS here if needed */
