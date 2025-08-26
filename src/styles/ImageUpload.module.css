@@ -182,8 +182,9 @@
 }
 
 .rightSection h2 {
-  color: var(--color-primario);
-  font-size: 1.5rem;
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 700;
   margin-bottom: var(--gap-mediano);
 }
 
@@ -356,3 +357,10 @@
 
 /* Alineación lista de archivos (mantiene tu look) */
 .fileList { display: flex; flex-direction: column; gap: 6px; }
+
+.selector{
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  padding: 30px;
+}

@@ -8,6 +8,7 @@ import { useDicomStore } from '../store/dicomStore';
 import Header from '../components/Navbar';
 import styles from '../styles/ImageUpload.module.css';
 import { apiFetch } from '../lib/api';
+import ProyectoSelector, { type ModoProyecto } from '../components/RadioBtn';
 
 cornerstoneWADOImageLoader.external.cornerstone = cornerstone;
 cornerstoneWADOImageLoader.external.dicomParser = dicomParser;
@@ -22,7 +23,6 @@ cornerstoneWADOImageLoader.webWorkerManager.initialize({
 });
 
 // ====== SOLO FAKE DATA PARA UI ======
-type ModoProyecto = 'existente' | 'nuevo';
 const EMPRESAS_FAKE = ['ENOD', 'YPF', 'Total', 'Pampa Energía'] as const;
 const PROYECTOS_FAKE: Record<(typeof EMPRESAS_FAKE)[number], string[]> = {
   ENOD: ['Oleoducto Sur', 'Inspección Q3', 'Reparación 12B'],
@@ -40,7 +40,6 @@ const ImageUpload: React.FC = () => {
 
   // derecha (común)
   const [modo, setModo] = useState<ModoProyecto>('existente');
-  const [fecha, setFecha] = useState('');
 
   // existente
   const [empresaSel, setEmpresaSel] = useState<string>('');
@@ -114,10 +113,6 @@ const ImageUpload: React.FC = () => {
       alert('Subí al menos una imagen .dcm');
       return;
     }
-    if (!fecha) {
-      alert('Completá la fecha.');
-      return;
-    }
 
     // elegir nombres según modo (SOLO LÓGICA FAKE)
     let clienteNombre = '';
@@ -152,7 +147,7 @@ const ImageUpload: React.FC = () => {
       if (data?.task_id) {
         setTaskId(String(data.task_id));
         // guardo SOLO los nombres e inputs para Analyze
-        setFormInfo({ cliente: clienteNombre, proyecto: proyectoNombre, fecha });
+        setFormInfo({ cliente: clienteNombre, proyecto: proyectoNombre, fecha: new Date().toISOString() });
         navigate('/analyzeImages');
       } else {
         alert('Error: no se recibió task_id del backend.');
@@ -173,7 +168,6 @@ const ImageUpload: React.FC = () => {
   const botonDeshabilitado =
     subiendo ||
     files.length === 0 ||
-    !fecha ||
     (modo === 'existente'
       ? !empresaSel || !proyectoSel
       : !empresaNueva.trim() || !proyectoNuevo.trim());
@@ -187,7 +181,7 @@ const ImageUpload: React.FC = () => {
           <div className={styles.dropZone}>
             <p><strong>Arrastrá tus imágenes DICOM</strong></p>
             <p className={styles.secondaryText}>o hacé clic para seleccionar archivos</p>
-            <label htmlFor="fileInput" className={styles.customFileButton}>Subir imagen</label>
+            <label htmlFor="fileInput" className={styles.customFileButton}>Seleccionar</label>
             <input
               id="fileInput"
               type="file"
@@ -217,23 +211,12 @@ const ImageUpload: React.FC = () => {
 
         {/* DERECHA */}
         <div className={styles.rightSection}>
-          {/* Tabs */}
-          <div className={styles.tabs}>
-            <button
-              className={`${styles.tab} ${modo === 'existente' ? styles.tabActive : ''}`}
-              onClick={() => setModo('existente')}
-            >
-              Proyecto existente
-            </button>
-            <button
-              className={`${styles.tab} ${modo === 'nuevo' ? styles.tabActive : ''}`}
-              onClick={() => setModo('nuevo')}
-            >
-              Proyecto nuevo
-            </button>
+          <div className={styles.selector}>
+            {/* 👉 Selector controlado reemplaza las tabs viejas */}
+            <ProyectoSelector value={modo} onChange={setModo} />
           </div>
 
-          <h2>Completar la siguiente información</h2>
+          <h2>Completar la siguiente información:</h2>
 
           {modo === 'existente' ? (
             <>
@@ -279,9 +262,6 @@ const ImageUpload: React.FC = () => {
               />
             </>
           )}
-
-          <label>Fecha</label>
-          <input type="date" value={fecha} onChange={(e) => setFecha(e.target.value)} />
 
           <button
             className={styles.nextButton}
