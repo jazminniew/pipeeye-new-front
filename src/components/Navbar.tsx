@@ -10,7 +10,7 @@ const Navbar: React.FC = () => {
     <header className={styles.navbar}>
       <div className={styles.logo}>
         <Link to="/dashboard" className={styles.nombreLogo}>
-          <img src="public/img/ICONO.png" alt="" className={styles.logoImg} />
+          <img src="/img/ICONO.png" alt="" className={styles.logoImg} />
           PipeEye
         </Link>
       </div>

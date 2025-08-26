@@ -55,3 +55,19 @@ body {
 
 /* @tailwind directives removed because Tailwind CSS is not configured or not being used */
 /* Add your custom CSS here if needed */
+
+/* Evita scroll horizontal en TODA la app */
+html, body {
+  width: 100%;
+  overflow-x: clip; /* si tu build no soporta 'clip', usá hidden */
+}
+
+/* Box-sizing coherente */
+*, *::before, *::after { box-sizing: border-box; }
+
+/* Medios nunca más anchos que el contenedor */
+img, video, canvas, svg {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}

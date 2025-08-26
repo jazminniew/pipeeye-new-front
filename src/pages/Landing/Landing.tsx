@@ -66,7 +66,7 @@ export default function Landing() {
       <header className={styles.header}>
         <div className={styles.container}>
           <a href="" className={styles.logoWrap}>
-            <img src="public/IMAGOTIPO.png" alt="PipeEye" className={styles.logo} />
+            <img src="/IMAGOTIPO.png" alt="PipeEye" className={styles.logo} />
           </a>
         </div>
       </header>
@@ -115,7 +115,7 @@ export default function Landing() {
     </div>
 
     <div className={styles.heroMedia}>
-       <img src="public/img/hero_img.png" alt="PipeEye" />
+       <img src="/img/hero_img.png" alt="PipeEye" />
     </div>
   </div>
 </section>
@@ -126,11 +126,17 @@ export default function Landing() {
           <div className={styles.container}>
             <h2 id="partners" className={styles.kicker}>La innovación en IA, de la mano de ENOD</h2>
             <div className={styles.partnerRow}>
-              <img src="public/img/ENOD.png" alt="ENOD" className={styles.partnerLogo} />
+              <img src="/img/ENOD.png" alt="ENOD" className={styles.partnerLogo} />
             </div>
           </div>
         </section>
 
+
+<section className={styles.scrollEffectSection}>
+  
+  <div className={styles.container}>
+    
+    <div className={styles.scrollSlot} data-slot="scroll-effect">
         {/* TEXTO (de librería) */}
         <div className={styles.centrar}>
         <section className={styles.richText}>
@@ -152,50 +158,44 @@ export default function Landing() {
           
         </section>
         </div>
-
-<section className={styles.scrollEffectSection}>
-  <div className={styles.container}>
-    <div className={styles.scrollSlot} data-slot="scroll-effect">
       <StickyScroll
+      
         scrollMode="page" // 👈 importante (aunque ahora es el default)
         sectionClassName="rounded-none" // opcional
         content={[
           {
-            title: "Subí tus radiografías",
+title: "Todos tus proyectos, ordenados en un solo lugar",
             description:
-              "Cargá ZIPs con múltiples DICOM y centralizá el análisis en un solo flujo.",
-            content: (
-              <div className="h-full w-full flex items-center justify-center text-white/90 p-4">
-                <span className="text-center text-sm">
-                  Dropzone + validación DICOM
-                </span>
-              </div>
-            ),
-          },
-          {
-            title: "IA que prioriza tu revisión",
-            description:
-              "Detectamos y clasificamos fisuras según normas; vos confirmás y corregís.",
+              "Centralizá y gestioná múltiples inspecciones desde una misma plataforma, sin perder control ni visibilidad.",
             content: (
               <img
                 alt="Detecciones IA"
-                src="/img/detecciones_mock.png"
+                src="/img/1scroll.png"
                 className="h-full w-full object-cover"
               />
             ),
           },
           {
-            title: "Trazabilidad y reportes",
+            title: "Detectá fallas automáticamente con IA",
             description:
-              "Auditoría por rol y reportes listos para compartir con tu cliente.",
+              "Nuestro sistema analiza imágenes y radiografías de ductos en tiempo real, identificando grietas, corrosión y anomalías invisibles al ojo humano",
             content: (
-              <video
-                src="/video/report_demo.mp4"
-                className="h-full w-full object-cover"
-                autoPlay
-                loop
-                muted
-                playsInline
+              <img
+                alt="Detecciones IA"
+                src="/img/2scroll.png"
+                className="h-full w-full object-fit padding-30"
+              />
+            ),
+          },
+          {
+            title: "Datos y estadísticas claras por cada inspección",
+            description:
+              "Accedé a reportes detallados de cada proyecto: radiografías analizadas, aprobadas, en revisión o rechazadas. Visualizá gráficos interactivos y exportá la información cuando lo necesites.",
+            content: (
+              <img
+                alt="Detecciones IA"
+                src="/img/3scroll.png"
+                className="h-full w-full object-fit padding-30"
               />
             ),
           },
