@@ -7,52 +7,16 @@ import { motion } from "framer-motion";
 import { HoverBorderGradient } from "../../components/ui/hover-border-gradient";
 import { StickyScroll } from "../../components/ui/sticky-scroll-reveal";
 
+// Define StickyItem type if not imported from elsewhere
+type StickyItem = {
+  title: string;
+  description: string;
+  content: React.ReactNode;
+};
+
 export default function Landing() {
      const [showSublead, setShowSublead] = useState(false);
 
-  const stickyContent: StickyItem[] = [
-    {
-      title: "Subí tus radiografías",
-      description:
-        "Cargá ZIPs con múltiples DICOM y centralizá el análisis en un solo flujo.",
-      content: (
-        <div className="h-full w-full flex items-center justify-center text-white/90 p-4">
-          <span className="text-center text-sm">
-            Dropzone + validación DICOM
-          </span>
-        </div>
-      ),
-    },
-    {
-      title: "IA que prioriza tu revisión",
-      description:
-        "Detectamos y clasificamos fisuras según normas; vos confirmás y corregís.",
-      content: (
-        <img
-          alt="Detecciones IA"
-          src="/img/detecciones_mock.png"
-          className="h-full w-full object-cover"
-        />
-      ),
-    },
-    {
-      title: "Trazabilidad y reportes",
-      description:
-        "Auditoría por rol y reportes listos para compartir con tu cliente.",
-      content: (
-        <div className="h-full w-full p-4 flex items-center justify-center">
-          <video
-            src="/video/report_demo.mp4"
-            className="h-full w-full object-cover"
-            autoPlay
-            loop
-            muted
-            playsInline
-          />
-        </div>
-      ),
-    },
-  ];
      
   return (
     <div className={styles.page}>
@@ -115,7 +79,14 @@ export default function Landing() {
     </div>
 
     <div className={styles.heroMedia}>
-       <img src="/img/hero_img.png" alt="PipeEye" />
+      <video
+        src="/tuboVideo.mp4"
+        autoPlay
+        loop
+        muted
+        playsInline
+        className="w-full h-full object-cover"
+      />
     </div>
   </div>
 </section>

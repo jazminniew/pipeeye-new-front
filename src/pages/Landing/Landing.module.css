@@ -140,3 +140,37 @@
   color:#fff;
   overflow-x: clip; /* refuerzo local */
 }
+
+.partners {
+  border-block: 1px solid rgba(255,255,255,.06);
+  background: rgba(255,255,255,.04);
+  padding: 24px 0;
+  text-align: center;              /* 👈 centra el texto */
+}
+
+.kicker {
+  text-transform: uppercase;
+  letter-spacing: .2em;
+  font-size: 12px;
+  color: #c3d3e5;
+  margin: 0 auto;                  /* por prolijidad */
+}
+
+.partnerRow {
+  display: flex;
+  justify-content: center;         /* 👈 centra los logos horizontalmente */
+  align-items: center;
+  gap: 32px;
+  margin-top: 12px;
+}
+
+.partnerLogo {
+  height: 80px;
+  width: auto;
+  object-fit: contain;             /* 👈 corregí el typo */
+  filter: grayscale(1);
+  transition: filter .2s;
+}
+.partnerLogo:hover {
+  filter: grayscale(0);
+}

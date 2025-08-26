@@ -14,7 +14,6 @@ type ScrollMode = "page" | "container";
 export function StickyScroll({
   content,
   contentClassName,
-  scrollMode = "page", // 👈 default: usa el scroll de la página
   sectionClassName,
 }: {
   content: StickyItem[];
