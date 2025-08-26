@@ -1,4 +1,3 @@
-// src/pages/ImageUpload.tsx
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import * as cornerstone from 'cornerstone-core';
@@ -9,6 +8,7 @@ import Header from '../components/Navbar';
 import styles from '../styles/ImageUpload.module.css';
 import { apiFetch } from '../lib/api';
 import ProyectoSelector, { type ModoProyecto } from '../components/RadioBtn';
+import { Building2, FileText } from 'lucide-react'; // 👈 Lucide icons
 
 cornerstoneWADOImageLoader.external.cornerstone = cornerstone;
 cornerstoneWADOImageLoader.external.dicomParser = dicomParser;
@@ -172,6 +172,12 @@ const ImageUpload: React.FC = () => {
       ? !empresaSel || !proyectoSel
       : !empresaNueva.trim() || !proyectoNuevo.trim());
 
+  // IDs para labels/inputs (accesibilidad)
+  const idEmpresaExist = 'empresa-existente';
+  const idProyectoExist = 'proyecto-existente';
+  const idEmpresaNueva = 'empresa-nueva';
+  const idProyectoNuevo = 'proyecto-nuevo';
+
   return (
     <div className={styles.body}>
       <Header />
@@ -212,7 +218,7 @@ const ImageUpload: React.FC = () => {
         {/* DERECHA */}
         <div className={styles.rightSection}>
           <div className={styles.selector}>
-            {/* 👉 Selector controlado reemplaza las tabs viejas */}
+            {/* Selector moderno controlado */}
             <ProyectoSelector value={modo} onChange={setModo} />
           </div>
 
@@ -220,8 +226,12 @@ const ImageUpload: React.FC = () => {
 
           {modo === 'existente' ? (
             <>
-              <label>Empresa</label>
+              <div className={styles.fieldLabel}>
+                <Building2 size={20} className={styles.ionIcon} />
+                <label htmlFor={idEmpresaExist}>Empresa</label>
+              </div>
               <select
+                id={idEmpresaExist}
                 className={styles.select}
                 value={empresaSel}
                 onChange={(e) => setEmpresaSel(e.target.value)}
@@ -232,8 +242,12 @@ const ImageUpload: React.FC = () => {
                 ))}
               </select>
 
-              <label>Proyecto</label>
+              <div className={styles.fieldLabel}>
+                <FileText size={20} className={styles.ionIcon} />
+                <label htmlFor={idProyectoExist}>Proyecto</label>
+              </div>
               <select
+                id={idProyectoExist}
                 className={styles.select}
                 value={proyectoSel}
                 onChange={(e) => setProyectoSel(e.target.value)}
@@ -247,15 +261,25 @@ const ImageUpload: React.FC = () => {
             </>
           ) : (
             <>
-              <label>Empresa</label>
+              <div className={styles.fieldLabel}>
+                <Building2 size={20} className={styles.ionIcon} />
+                <label htmlFor={idEmpresaNueva}>Empresa</label>
+              </div>
               <input
+                id={idEmpresaNueva}
+                className={styles.input}
                 placeholder="Nombre empresa"
                 value={empresaNueva}
                 onChange={(e) => setEmpresaNueva(e.target.value)}
               />
 
-              <label>Proyecto</label>
+              <div className={styles.fieldLabel}>
+                <FileText size={20} className={styles.ionIcon} />
+                <label htmlFor={idProyectoNuevo}>Proyecto</label>
+              </div>
               <input
+                id={idProyectoNuevo}
+                className={styles.input}
                 placeholder="Nombre del proyecto"
                 value={proyectoNuevo}
                 onChange={(e) => setProyectoNuevo(e.target.value)}
