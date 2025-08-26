@@ -4,15 +4,17 @@ import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
 import ImageUpload from './pages/ImagesUpload'
 import AnalyzeImages from './pages/AnalyzeImages'
+import History from './pages/History'
 
 export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Login />} />
+        <Route path="/login" element={<Login />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/upload" element={<ImageUpload />} />
         <Route path="/analyzeImages" element={<AnalyzeImages />} />
+        <Route path="/history" element={<History />} /> 
       </Routes>
     </BrowserRouter>
   )

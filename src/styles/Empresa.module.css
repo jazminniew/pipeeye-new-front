@@ -1,0 +1,81 @@
+/* src/styles/Empresa.module.css */
+.card {
+  background-color: var(--cajas);
+  color: white;
+  border-radius: 12px;
+  padding: 20px;
+  width: 280px;
+  font-family: 'Segoe UI', sans-serif;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.icono {
+  width: 40px;
+  height: 40px;
+  background-color: var(--color-primario);
+  border-radius: 8px;
+}
+
+.nombre {
+  margin: 0;
+  font-size: 18px;
+}
+
+.fecha {
+  font-size: 14px;
+  color: #ccc;
+  margin: 0;
+}
+
+.botones {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.boton, .botonSecundario {
+  flex: 1;
+  text-align: center;
+  padding: 10px 12px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: background 0.2s ease;
+}
+
+.boton {
+  background-color: var(--color-primario);
+  color: #000;
+}
+
+.boton:hover {
+  background-color: rgb(58, 115, 237);
+}
+
+.botonSecundario {
+  background-color: #1f2b44;
+  color: var(--color-primario);
+  border: 1px solid var(--color-primario);
+}
+
+.botonSecundario:hover {
+  background-color: #283855;
+}
+.fadeIn {
+  opacity: 0;
+  animation: fadeInAnim 0.8s ease forwards;
+}
+
+@keyframes fadeInAnim {
+  to {
+    opacity: 1;
+  }
+}

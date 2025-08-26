@@ -1,0 +1,164 @@
+:root {
+  --azul-fondo: #0c1b2c;
+  --azul-muy-oscuro: #08121f;
+  --rojo: #ff4d4f;
+  --rojo-hover: #e63946;
+  --blanco: #ffffff;
+  --gap-pequeño: 8px;
+  --gap-mediano: 16px;
+  --gap-grande: 24px;
+  --border-radius-md: 8px;
+  --border-radius-lg: 12px;
+  --color-primario: #24A8FF; 
+  --gris-medio: #d1d1d1;
+  --gris-claro: #bbbbbb;
+  --gris-oscuro: #444;
+  --cajas: #111a2b;
+}
+
+.wrapper {
+  display: flex;
+  justify-content: flex-start;
+  align-items: flex-start;
+  padding: 0;
+}
+
+body {
+  background-color: var(--azul-muy-oscuro);
+}
+
+.todo {
+  padding: 0px 50px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.titulo {
+  color: var(--blanco);
+}
+
+/* =========================
+   SEARCHBAR LINDA
+   ========================= */
+.topBar {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.searchWrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 9999px;
+  padding: 10px 14px;
+  gap: 8px;
+  min-width: 320px;
+  max-width: 520px;
+  width: 100%;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+  backdrop-filter: blur(6px);
+}
+
+.searchWrap:hover {
+  border-color: rgba(255,255,255,0.22);
+  background: rgba(255,255,255,0.08);
+}
+
+.searchWrap:focus-within {
+  border-color: var(--color-primario);
+  box-shadow: 0 0 0 3px rgba(36,168,255,0.25);
+  background: rgba(255,255,255,0.10);
+}
+
+.searchIcon {
+  font-size: 18px;
+  opacity: 0.9;
+  pointer-events: none;
+}
+
+.searchInput {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--blanco);
+  font-size: 14px;
+  line-height: 1.2;
+  padding: 2px 6px;
+}
+
+.searchInput::placeholder {
+  color: rgba(255,255,255,0.65);
+}
+
+.clearBtn {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 28px;
+  width: 28px;
+  border-radius: 9999px;
+  border: none;
+  background: rgba(255,255,255,0.12);
+  color: var(--blanco);
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s ease, transform 0.05s ease;
+}
+
+.clearBtn:hover { background: rgba(255,255,255,0.2); }
+.clearBtn:active { transform: translateY(-50%) scale(0.96); }
+
+/* =========================
+   GRILLA
+   ========================= */
+.gridContainer {
+  display: grid;
+  grid-template-columns: repeat(4, 280px);
+  gap: 24px;
+  justify-content: start;
+}
+
+@media (max-width: 1280px) {
+  .gridContainer { grid-template-columns: repeat(3, 280px); }
+}
+@media (max-width: 980px) {
+  .gridContainer { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 600px) {
+  .gridContainer { grid-template-columns: 1fr; }
+  .todo { padding: 0 20px; }
+  .searchWrap { min-width: 0; width: 100%; }
+}
+
+/* =========================
+   MENSAJES / ERRORES
+   ========================= */
+.msg {
+  color: rgba(255,255,255,0.9);
+  background: rgba(255,255,255,0.06);
+  border: 1px dashed rgba(255,255,255,0.18);
+  padding: 12px 14px;
+  border-radius: var(--border-radius-md);
+  width: fit-content;
+}
+
+/* ⚠️ ERROR EN BLANCO (texto) */
+.error {
+  color: var(--blanco);                 /* 👈 blanco */
+  background: rgba(255,255,255,0.08);   /* leve fondo translúcido */
+  border: 1px solid rgba(255,255,255,0.25);
+  padding: 12px 14px;
+  border-radius: var(--border-radius-md);
+  width: fit-content;
+  max-width: 100%;
+  word-break: break-word;
+}
