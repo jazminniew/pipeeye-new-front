@@ -2,10 +2,14 @@ import styles from "./Landing.module.css";
 import { FloatingNav } from "../../components/ui/floating-navbar";
 import { TypewriterEffect } from "../../components/ui/typewriter-effect";
 import { FlipWords } from "../../components/ui/flip-words";
+import { LayoutGrid } from "../../components/ui/layout-grid";
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { HoverBorderGradient } from "../../components/ui/hover-border-gradient";
 import { StickyScroll } from "../../components/ui/sticky-scroll-reveal";
+import FeatureCards from "./FeatureCards";
+import { Compare } from "../../components/ui/compare"; // ajustá la ruta si tu archivo se llama distinto
+
 
 // Define StickyItem type if not imported from elsewhere
 type StickyItem = {
@@ -130,12 +134,11 @@ export default function Landing() {
         </section>
         </div>
       <StickyScroll
-      
         scrollMode="page" // 👈 importante (aunque ahora es el default)
         sectionClassName="rounded-none" // opcional
         content={[
           {
-title: "Todos tus proyectos, ordenados en un solo lugar",
+            title: "Todos tus proyectos, ordenados en un solo lugar",
             description:
               "Centralizá y gestioná múltiples inspecciones desde una misma plataforma, sin perder control ni visibilidad.",
             content: (
@@ -154,7 +157,7 @@ title: "Todos tus proyectos, ordenados en un solo lugar",
               <img
                 alt="Detecciones IA"
                 src="/img/2scroll.png"
-                className="h-full w-full object-fit padding-30"
+                className="h-full w-full object-cover"
               />
             ),
           },
@@ -166,7 +169,7 @@ title: "Todos tus proyectos, ordenados en un solo lugar",
               <img
                 alt="Detecciones IA"
                 src="/img/3scroll.png"
-                className="h-full w-full object-fit padding-30"
+                className="h-full w-full object-cover"
               />
             ),
           },
@@ -177,47 +180,77 @@ title: "Todos tus proyectos, ordenados en un solo lugar",
 </section>
 
         {/* POR QUÉ ELEGIR PIPEEYE */}
-        <section id="por-que" className={styles.why}>
-          <div className={styles.container}>
-            <h2 className={styles.h2}>¿Por qué elegir PipeEye?</h2>
-            <p className={styles.lead}>Priorizamos precisión, trazabilidad y colaboración entre equipos técnicos y de control de calidad.</p>
-            <div className={styles.cardGrid}>
-              <article className={styles.card}>
-                <h3 className={styles.cardTitle}>Detección asistida por IA</h3>
-                <p className={styles.cardText}>Modelos entrenados para identificar tipos de fisuras y priorizar revisión humana.</p>
-              </article>
-              <article className={styles.card}>
-                <h3 className={styles.cardTitle}>Trazabilidad y normas</h3>
-                <p className={styles.cardText}>Clasificación alineada a estándares (p.ej. API 1104) y auditoría completa.</p>
-              </article>
-              <article className={styles.card}>
-                <h3 className={styles.cardTitle}>Workflow colaborativo</h3>
-                <p className={styles.cardText}>Roles por permisos, correcciones manuales y reportes listos para compartir.</p>
-              </article>
-            </div>
-          </div>
-        </section>
+  <section id="por-que" className={styles.why}>
+  <div className={styles.container}>
+    <h2 className={styles.h2}>¿Por qué elegir PipeEye?</h2>
+    <p className={styles.lead}>
+      Priorizamos precisión, trazabilidad y colaboración entre equipos técnicos y de control de calidad.
+    </p>
 
+    {/* NUEVO */}
+    <FeatureCards />
+  </div>
+</section>
         {/* QUIÉNES SOMOS */}
         <section id="quienes" className={styles.quienes}>
           <div className={`${styles.container} ${styles.quienesGrid}`}>
+              <div className={styles.teamMedia}>
+              <span className={styles.mediaPlaceholder}><img src="/SobreNosotros.png" alt="" /></span>
+            </div>
             <div>
-              <h2 className={styles.h2}>Quiénes somos</h2>
+              <h2 className={styles.h2}>¿Quiénes somos?</h2>
               <p className={styles.body}>
-                Somos un equipo interdisciplinario de estudiantes y colaboradores que trabajamos con ENOD para llevar la inspección de
-                oleoductos al siguiente nivel: más rápida, más clara y con foco en la seguridad.
+                Detrás de PipeEye hay un grupo apasionado por la tecnología y la innovación aplicada a la energía. Trabajamos en alianza con ENOD para integrar inteligencia artificial, diseño y usabilidad en una herramienta capaz de transformar la manera en que se inspeccionan ductos. Nos mueve el desafío de resolver problemas reales con soluciones simples y efectivas.
               </p>
             </div>
-            <div className={styles.teamMedia}>
-              <span className={styles.mediaPlaceholder}>Imagen del equipo / mock</span>
-            </div>
+
           </div>
+
+          <section id="galeria" className={styles.galeria}>
+  <div className={styles.container}>
+<LayoutGrid
+  cards={[
+    {
+      id: 1,
+      content: <p>PipeEye se desarrolla en el marco de la orientación TIC de ORT Argentina, un espacio de formación técnica en tecnologías de la información y la comunicación que fomenta la innovación, el trabajo colaborativo y la aplicación práctica de la programación y el diseño para dar respuesta a desafíos reales de la industria.</p>,
+      // 👉 ancho 2 columnas, altura fija igual que el min-h del componente
+      className: "col-span-1 md:col-span-2 h-[16rem] md:h-[18rem] rounded-2xl",
+      thumbnail: "/img/tic.jpg",
+    },
+    {
+      id: 2,
+      content: <p>Cambiar img.</p>,
+      // 👉 1 columna, misma altura
+      className: "col-span-1 md:col-span-1 h-[16rem] md:h-[18rem] rounded-2xl",
+      thumbnail: "/img/sede-ort.jpg",
+    },
+    {
+      id: 3,
+      content: <p>Como equipo de la orientación TIC de ORT Argentina, dividimos nuestros roles para potenciar lo que mejor sabe hacer cada uno: desde el desarrollo frontend y backend hasta el diseño UX/UI y la gestión del proyecto. Esta organización nos permitió trabajar de manera colaborativa, iterando por sprints y construyendo una solución integral con impacto real en la industria.</p>,
+      // 👉 1 columna, misma altura (nada de row-span)
+      className: "col-span-1 md:col-span-1 h-[16rem] md:h-[18rem] rounded-2xl",
+      thumbnail: "/img/nosotros.png",
+    },
+    {
+      id: 4,
+      content: <p>PipeEye nació en el marco del colegio ORT Argentina, una institución de educación técnica que impulsa a sus estudiantes a desarrollar proyectos innovadores, integrando programación, diseño y trabajo en equipo para resolver problemas reales con impacto en la industria.</p>,
+      // 👉 ancho 2 columnas, misma altura
+      className: "col-span-1 md:col-span-2 h-[16rem] md:h-[18rem] rounded-2xl",
+      thumbnail: "/img/ort.png",
+    },
+  ]}
+/>
+
+
+  </div>
+</section>
         </section>
+
 
         {/* SOBRE NOSOTROS */}
         <section id="sobre" className={styles.sobre}>
           <div className={styles.container}>
-            <h2 className={styles.h2}>Sobre nosotros</h2>
+            <h2 className={styles.h2}>¿Como funciona el proyecto?</h2>
             <p className={styles.body}>
               PipeEye nació como proyecto académico con ambición real: integrar visión computacional y prácticas de ingeniería de
               software para resolver un problema concreto del sector energético. Iteramos por sprints, documentamos resultados y diseñamos
@@ -228,7 +261,15 @@ title: "Todos tus proyectos, ordenados en un solo lugar",
               <li className={styles.pill}>React + TypeScript en frontend</li>
               <li className={styles.pill}>Reporte y auditoría por rol</li>
             </ul>
+
+            <Compare
+              firstImage="/img/ort.png"
+              secondImage="/img/tic.jpg"
+              slideMode="hover"
+              className="w-[500px] h-[300px] rounded-2xl"
+            />
           </div>
+          
         </section>
       </main>
 

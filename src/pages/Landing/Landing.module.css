@@ -114,11 +114,35 @@
 .cardText{ color:#d1dceb; margin:0 }
 
 /* quienes */
-.quienes{ padding: 84px 0; border-block:1px solid rgba(255,255,255,.06); background: rgba(255,255,255,.03) }
+/* quienes */
+.quienes{
+  padding-block: 0;                 /* sin padding arriba/abajo */
+  border-block: 0;                  /* si no querés línea separadora */
+  background: rgba(255,255,255,.03);
+  overflow: hidden;  
+  padding-bottom: 130px;               /* evita colapso de márgenes internos */
+}
+
 .quienesGrid{ display:grid; grid-template-columns:1.1fr .9fr; gap:32px; align-items:center }
 @media (max-width: 860px){ .quienesGrid{ grid-template-columns:1fr } }
 .body{ color:#d5e2f2; line-height:1.65 }
-.teamMedia{ aspect-ratio: 16/10; background: rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.1); border-radius:24px; display:grid; place-items:center }
+.teamMedia{
+  aspect-ratio: 16/10;
+  background: transparent;
+  border: none;
+  border-radius: 24px;
+  display: grid;
+  place-items: center;
+  line-height: 0;                   /* 👈 mata espacio por línea base */
+}
+.teamMedia img{
+  display: block;                   /* 👈 evita gap de inline images */
+  width: 100%;
+  height: auto;
+}
+.mediaPlaceholder{ display:inline-block; line-height:0; }
+.quienes h2,
+.quienes p{ margin-block: 0; }   /* quita márgenes externos arriba/abajo */
 
 /* sobre */
 .sobre{ padding: 84px 0 }

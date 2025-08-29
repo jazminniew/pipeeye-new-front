@@ -1,0 +1,143 @@
+
+/* ===== Feature cards (estilo “sección azul”) ===== */
+.featureGrid{
+  display:grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+@media (max-width: 860px){
+  .featureGrid{ grid-template-columns: 1fr; }
+}
+
+.featureCard{
+  position: relative;
+  isolation: isolate;
+  border-radius: 18px;
+  padding: 18px 18px 20px 18px;
+  background: color-mix(in oklab, var(--card), #0a1622 30%);
+  border: 1px solid rgba(36,168,255,.18);
+  box-shadow:
+    0 0 0 1px rgba(167,5,255,.08) inset,
+    0 10px 30px rgba(0,0,0,.35);
+  transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease;
+}
+.featureCard:hover{
+  transform: translateY(-2px);
+  border-color: rgba(36,168,255,.35);
+  box-shadow:
+    0 0 0 1px rgba(167,5,255,.14) inset,
+    0 18px 38px rgba(0,0,0,.45);
+}
+
+.featureIcon{
+  width: 44px; height: 44px;
+  display:grid; place-items:center;
+  border-radius: 12px;
+  margin-bottom: 10px;
+  background: radial-gradient(120% 120% at 30% 20%, rgba(36,168,255,.25), rgba(167,5,255,.18));
+  color: #9fd4ff;           /* color de icono */
+  border: 1px solid rgba(255,255,255,.10);
+}
+.featureIcon svg{ width: 24px; height: 24px; }
+
+.featureBody{ position: relative; z-index: 1; }
+.featureTitle{ font-size: 18px; margin: 0 0 6px; }
+.featureText{ color:#cfe1f4; margin: 0; line-height: 1.55; }
+
+/* glow sutil al fondo */
+.featureGlow{
+  position:absolute; inset:auto -20% -35% -20%;
+  height: 120px;
+  background:
+    radial-gradient(60% 80% at 50% 0%,
+      color-mix(in oklab, var(--primary), #7cc3ff 30%) 0%,
+      transparent 70%);
+  filter: blur(30px);
+  opacity: .35;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* estructura basada en tu figma */
+.featureCard{
+  position: relative;
+  isolation: isolate;
+  border-radius: 16px;
+  padding: 18px 18px 18px 18px;
+  background:
+    radial-gradient(120% 160% at 20% -10%, rgba(36,168,255,.10), transparent 60%),
+    linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.00));
+  border: 1px solid rgba(255,255,255,.10);
+  box-shadow: 0 10px 26px rgba(0,0,0,.25);
+  transition: transform .28s cubic-bezier(.2,.8,.2,1),
+              box-shadow .28s cubic-bezier(.2,.8,.2,1),
+              border-color .28s ease,
+              background-position .6s ease;   /* parallax sutil */
+  background-position: 0% 0%;
+  overflow: hidden;
+}
+
+/* barra top accent (wireframe) */
+.featureCard::before{
+  content:"";
+  position:absolute; inset:0 0 auto 0; height:2px;
+  background: linear-gradient(90deg, #24A8FF, #0548ff);
+  opacity:.6;
+  transform: translateX(-100%);
+  transition: transform .6s cubic-bezier(.2,.8,.2,1);
+}
+
+/* brillo diagonal al hover */
+.featureCard::after{
+  content:"";
+  position:absolute; inset:-40% -40%;
+  background: linear-gradient(120deg, transparent 40%, rgba(255,255,255,.06), transparent 60%);
+  transform: translateX(-20%);
+  opacity: 0;
+  transition: opacity .35s ease, transform .6s ease;
+  pointer-events:none;
+  z-index: 0;
+}
+
+.featureCard:hover{
+  transform: translateY(-3px);
+  border-color: rgba(36,168,255,.28);
+  box-shadow: 0 16px 38px rgba(0,0,0,.38);
+  background-position: 10% 6%;
+}
+.featureCard:hover::before{ transform: translateX(0); }
+.featureCard:hover::after{ opacity: 1; transform: translateX(0); }
+
+/* header con icono a la izquierda — como figma */
+.featureHeader{
+  display:flex; align-items:flex-start; gap:12px; margin-bottom:8px;
+}
+
+.featureIcon{
+  flex:0 0 44px; height:44px;
+  display:grid; place-items:center;
+  border-radius: 12px;
+  background: radial-gradient(120% 120% at 30% 20%, rgba(36,168,255,.22), rgba(167,5,255,.14));
+  color:#9fd4ff;
+  border:1px solid rgba(255,255,255,.10);
+  box-shadow: 0 6px 18px rgba(36,168,255,.12);
+  transition: transform .25s ease, box-shadow .25s ease, color .25s ease;
+  z-index:1;
+}
+.featureIcon svg{ width:22px; height:22px; }
+.featureCard:hover .featureIcon{
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgba(36,168,255,.26);
+  color:#c8e6ff;
+}
+
+/* cuerpo: título y texto */
+.featureBody{ position: relative; z-index:1; }
+.featureTitle{ font-size: 17px; font-weight: 700; margin: 2px 0 4px; }
+.featureText{ color:#cfe1f4; margin:0; line-height:1.55; }
+
+/* grid */
+.featureGrid{
+  display:grid; grid-template-columns: repeat(3,1fr); gap:20px;
+}
+@media (max-width: 860px){ .featureGrid{ grid-template-columns:1fr; } }

@@ -3,6 +3,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { motion, useMotionValueEvent, useScroll } from "framer-motion";
 import { cn } from "@/lib/utils";
 
+
 export type StickyItem = {
   title: string;
   description: string;
@@ -15,12 +16,15 @@ export function StickyScroll({
   content,
   contentClassName,
   sectionClassName,
+  switchAt = 2.8,     
 }: {
   content: StickyItem[];
   contentClassName?: string;
   scrollMode?: ScrollMode;
-  sectionClassName?: string; // para pasar clases (paddings/margins) al wrapper
+  sectionClassName?: string;
+  switchAt?: number;   // 👈
 }) {
+
   const [activeCard, setActiveCard] = useState(0);
   const sectionRef = useRef<HTMLDivElement | null>(null);
 
@@ -32,19 +36,22 @@ export function StickyScroll({
     offset: ["start end", "end start"],
   });
 
-  useMotionValueEvent(scrollYProgress, "change", (latest) => {
-    // Calcula el “breakpoint” de cada card a lo largo de la sección
-    const cardLength = content.length;
-    const breakpoints = content.map((_, i) => i / Math.max(cardLength - 1, 1));
-    // Buscamos el índice con distancia mínima al progreso actual
-    let closest = 0;
-    for (let i = 1; i < breakpoints.length; i++) {
-      if (Math.abs(latest - breakpoints[i]) < Math.abs(latest - breakpoints[closest])) {
-        closest = i;
-      }
-    }
-    setActiveCard(closest);
-  });
+useMotionValueEvent(scrollYProgress, "change", (latest) => {
+  const N = content.length;
+  if (N <= 1) return setActiveCard(0);
+
+  // clamp del switchAt de 0..1
+  const s = Math.min(Math.max(switchAt, 0), 1);
+
+  // umbrales donde cambia de card: (i + s)/N
+  const thresholds = Array.from({ length: N - 1 }, (_, i) => (i + s) / N);
+
+  let idx = 0;
+  while (idx < thresholds.length && latest >= thresholds[idx]) idx++;
+
+  setActiveCard(idx);
+});
+
 
   const backgroundColors = ["#0b0f13", "#000000", "#171717"];
   const linearGradients = [

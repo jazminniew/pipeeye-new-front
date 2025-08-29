@@ -1,5 +1,8 @@
 {
   "compilerOptions": {
+    "jsx": "react-jsx",           // 👈 necesario para que TS entienda JSX
+    "types": ["react"],           // 👈 incluye las definiciones de React
+    "moduleResolution": "node",
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"]
