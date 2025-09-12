@@ -5,10 +5,12 @@ import { cn } from "@/lib/utils";
 
 
 export type StickyItem = {
-  title: string;
-  description: string;
-  content?: React.ReactNode;
+  id?: string | number;         // ✅ para keys estables (opcional)
+  title: React.ReactNode;       // puede ser nodo o null
+  description: React.ReactNode;
+  content: React.ReactNode;
 };
+
 
 type ScrollMode = "page" | "container";
 
@@ -53,11 +55,11 @@ useMotionValueEvent(scrollYProgress, "change", (latest) => {
 });
 
 
-  const backgroundColors = ["#0b0f13", "#000000", "#171717"];
+  const backgroundColors = ["#0b0f13", "#0b0f13", "#0b0f13"]; //#0b0f13
   const linearGradients = [
-    "linear-gradient(to bottom right, #000, #000)",
-    "linear-gradient(to bottom right, #000, #000)",
-    "linear-gradient(to bottom right, #000, #000)",
+    "linear-gradient(to bottom right, transparent, transparent)",
+    "linear-gradient(to bottom right, transparent, transparent)",
+    "linear-gradient(to bottom right, transparent, transparent)",
   ];
 
   const [backgroundGradient, setBackgroundGradient] = useState(linearGradients[0]);
@@ -80,27 +82,28 @@ useMotionValueEvent(scrollYProgress, "change", (latest) => {
         {/* Columna de texto (flujo) */}
         <div className="w-full md:w-[60%]">
           {content.map((item, index) => (
-            <div
-              key={item.title + index}
-              // altura generosa para “marcar” cada card en el scroll de la página
-              className="min-h-[60vh] md:min-h-[80vh] flex flex-col justify-center"
-            >
-              <motion.h2
-                initial={{ opacity: 0 }}
-                animate={{ opacity: activeCard === index ? 1 : 0.35 }}
-                className="text-3xl md:text-4xl font-semibold text-slate-100"
-              >
-                {item.title}
-              </motion.h2>
-              <motion.p
-                initial={{ opacity: 0 }}
-                animate={{ opacity: activeCard === index ? 1 : 0.35 }}
-                className="mt-6 max-w-prose text-slate-300"
-              >
-                {item.description}
-              </motion.p>
-            </div>
-          ))}
+  <div
+    key={item.id ?? index}   // ✅ sin usar title
+    className="min-h-[60vh] md:min-h-[80vh] flex flex-col justify-center"
+  >
+    <motion.h2
+      initial={{ opacity: 0 }}
+      animate={{ opacity: activeCard === index ? 1 : 0.35 }}
+      className="text-3xl md:text-4xl font-semibold text-slate-100"
+    >
+      {item.title ?? null}     {/* ✅ si fuera null/undefined no rompe */}
+    </motion.h2>
+
+    <motion.p
+      initial={{ opacity: 0 }}
+      animate={{ opacity: activeCard === index ? 1 : 0.35 }}
+      className="mt-6 max-w-prose text-slate-300"
+    >
+      {item.description ?? null}
+    </motion.p>
+  </div>
+))}
+
         </div>
 
         {/* Columna sticky (visual) */}
@@ -108,7 +111,7 @@ useMotionValueEvent(scrollYProgress, "change", (latest) => {
           <div
             style={{ background: backgroundGradient }}
             className={cn(
-              "sticky top-16 h-[22rem] w-full overflow-hidden rounded-xl bg-white shadow-2xl ring-1 ring-white/10 backdrop-blur",
+              "sticky top-16 h-[22rem] w-full overflow-hidden rounded-xl bg-transparent outline-none",
               contentClassName
             )}
           >

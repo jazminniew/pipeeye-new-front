@@ -1,0 +1,57 @@
+.landing {
+  /* === Paleta base === */
+  --bg: #0b0f13;   /* mas azul: l0F172A*/
+  --panel: #11161c;
+  --panel-2: #0d1424;
+
+  --text: #e6edf7;
+  --muted: #9fb3c8;
+  --muted-2: #8e9ab3;
+
+  /* === Marca PipeEye === */
+  --primary: #007BFF;   /* celeste principal */
+  --primary-600: #1f98e7;
+  --primary-700: #1a87ce;
+  --accent: #A705FF;    /* violeta para detalles */
+
+  /* === UI === */
+  --border: rgba(255,255,255,0.09);
+  --ok: #2ecc8f;
+  --fail: #ef6b6b;
+
+  /* === FX y shape === */
+  --focus: rgba(36,168,255,0.28);
+  --ring: 1px solid var(--border);
+  --radius: 14px;
+  --radius-sm: 10px;
+  --shadow: 0 16px 40px rgba(2, 6, 23, 0.46);
+
+  /* Tipografía / ritmo */
+  --fs-12: 12px; --fs-13: 13px; --fs-14: 14px; --fs-15: 15px; --fs-16: 16px;
+  --lh-12: 1.2; --lh-14: 1.4; --lh-16: 1.6;
+
+  --s-6: 6px; --s-8: 8px; --s-10: 10px; --s-12: 12px; --s-14: 14px;
+  --s-16: 16px; --s-18: 18px; --s-20: 20px; --s-24: 24px; --s-28: 28px;
+}
+
+/* Base y utilidades SOLO dentro de la landing */
+.landing {
+  color-scheme: dark;
+  background: var(--bg);
+  color: var(--text);
+  font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial, "Noto Sans", "Helvetica Neue", sans-serif;
+}
+
+.landing * { box-sizing: border-box; }
+.landing .container { width: min(1120px, 92%); margin-inline: auto; }
+
+/* Focus accesible por defecto dentro del scope */
+.landing :where(input, textarea, button, summary, a):focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 4px var(--focus);
+  border-color: var(--primary-600);
+}
+
+html {
+  scroll-behavior: smooth;
+}

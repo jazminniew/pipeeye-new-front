@@ -62,7 +62,7 @@ export default function FeatureCards({ className = "" }: { className?: string })
     <motion.div
       className={`${styles.featureGrid} ${className}`}   // 👈 usa styles.featureGrid
       variants={container}
-      initial="hidden"
+      initial="hidden"  
       whileInView="show"
       viewport={{ once: true, margin: "0px 0px -80px 0px" }}
     >
