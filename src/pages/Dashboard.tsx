@@ -1,13 +1,17 @@
-import React, { useEffect, useRef } from 'react';
-import Navbar from '../components/Navbar';
-import Estadisticas from '../components/Statistics';
-import Grafico from '../components/CakeGraph';
-import LineGraph from '../components/LineGraph';
-import styles from '../styles/Dashboard.module.css';
+import React, { useEffect, useRef } from "react";
+import Navbar from "../components/Navbar";
+import Estadisticas from "../components/Statistics";
+import Grafico from "../components/CakeGraph";
+import LineGraph from "../components/LineGraph";
+import styles from "../styles/Dashboard.module.css";
+import AnimatedHeadline from "../components/AnimatedHeadline";
+import { gsap } from "gsap";
+import "../styles/Globals.css";
 
 const Dashboard: React.FC = () => {
   const glowRef = useRef<HTMLDivElement>(null);
 
+  // 1) Glow que sigue el mouse
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       const x = 30 + (e.clientX / window.innerWidth) * 80;
@@ -17,9 +21,41 @@ const Dashboard: React.FC = () => {
           `radial-gradient(ellipse 60% 90% at ${x}% ${y}%, #0054EC, transparent 100%)`;
       }
     };
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => window.removeEventListener("mousemove", handleMouseMove);
   }, []);
+
+useEffect(() => {
+  if (typeof window === "undefined") return;
+
+  const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
+  const cont = document.querySelector(`.${styles.estadisticas}`) as HTMLElement | null;
+  if (!cont) return;
+
+  const cards = cont.querySelectorAll<HTMLElement>(`.${styles.caja}`);
+  if (!cards.length) return;
+
+  gsap.set(cards, { opacity: 0, y: 16, willChange: "transform, opacity" });
+
+  if (reduce) {
+    gsap.set(cards, { opacity: 1, y: 0, clearProps: "willChange" });
+    return;
+  }
+
+  const tl = gsap.timeline();
+  tl.to(cards, {
+    opacity: 1,
+    y: 0,
+    duration: 1,
+    ease: "power3.out",
+    stagger: 0.2,
+    clearProps: "willChange",
+  });
+  return () => {
+    tl.kill();      
+  };
+}, []);
+
 
   return (
     <div className={styles.dashboardContainer}>
@@ -29,16 +65,20 @@ const Dashboard: React.FC = () => {
         <div ref={glowRef} className={styles.backgroundGlow} />
 
         <div className={styles.header}>
-          <h2 className={styles.title}>Bienvenido a PipeEye</h2>
+          <AnimatedHeadline
+            text="Bienvenido a PipeEye"
+            as="h2"
+            className={styles.title}
+          />
           <p className={styles.subtitle}>
-            Panel de resultados generados por el sistema inteligente de análisis PipeEye.
+            Panel de resultados generados por el sistema inteligente de análisis
+            PipeEye.
           </p>
         </div>
 
         <Estadisticas />
 
         <div className={styles.infoSecundaria}>
-          {/* Gráfico grande (líneas) */}
           <div className={styles.containerGraficoGrande}>
             <div className={styles.graphHeader}>
               <h3>Radiografías Analizadas</h3>
@@ -49,7 +89,6 @@ const Dashboard: React.FC = () => {
             </div>
           </div>
 
-          {/* Gráfico chico (torta) */}
           <div className={styles.containerGrafico}>
             <div className={styles.graphHeader}>
               <h3>Porcentaje</h3>

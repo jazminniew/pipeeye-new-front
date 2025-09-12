@@ -1,73 +1,57 @@
 :root {
-  /* colores */
-  --color-primario: #2563EB;
-  --color-primario-hover: #296dff;
-  --fondo:rgb(25, 26, 34);
-  --secundario: #fff;
-  --gris-claro: #e0e0e0;
-  --gris-medio: #dbdbdb;
-  --gris-oscuro: #575656;
-  --texto-principal: #414141;
-  --texto-oscuro: #000000;
-  --blanco: #fff;
-  --negro: #000;
-  --caja-background: linear-gradient(127deg, rgba(6, 11, 38, 0.89) 28.26%, rgba(26, 31, 55, 0.50) 91.2%);
-  --caja-blur: blur(32px);
-  --caja-radius: 20px;
+  /* Base neutrales */
+  --fondo: #08121F;
+  --blanco: #ffffff;
+  --negro: #000000;
+
+  /* Tipografía */
+  --texto-principal: #e4e4e7;
+  --texto-secundario: #a1a1aa;
+  --texto-muted: #71717a;
+
+  /* Accentos */
+  --color-primario: #3C8CFF;
+  --color-primario-hover: #1d5edc;
   --verde: #16A34A;
-  --naranja:#D97706;
-  --rojo:#DC2626;
+  --naranja: #D97706;
+  --rojo: #DC2626;
 
-  /* espaciados */
-  --gap-pequeño: 8px;
-  --gap-mediano: 20px;
-  --gap-grande: 40px;
+  /* Grises */
+  --gris-claro: #d4d4d8;
+  --gris-medio: #a1a1aa;
+  --gris-oscuro: #52525b;
 
-  /* tipografías */
-  --font-base: 'Helvetica Neue', Arial, sans-serif;
+  /* Cajas / glass */
+  --caja-background: #111A2B;
+  --caja-blur: blur(24px);
+  --caja-radius: 16px;
 
-  /* bordes y radios */
-  --border-radius-lg: 10px;
-  --border-radius-md: 4px;
-  --border-radius-sm: 2px;
+  /* Otros */
+  --gap-sm: 0.5rem;
+  --gap-md: 1rem;
+  --gap-lg: 2rem;
+
+    /*DASHBOARD: ALIAS SOLO DE COLORES QUE NO EXISTEN EN GLOBALS */
+  --cajas: var(--caja-background);
+  --glow-color: var(--color-primario);
+  --fondo-dashboard: var(--fondo);
+
+  /* compactación (SIN CAMBIOS) */
+  --pad-page: 1.25rem;     /* antes 2rem */
+  --gap-lg: 1rem;          /* antes 2rem */
+  --gap-md: 0.75rem;
+
+  /* alturas objetivo (SIN CAMBIOS) */
+  --h-graph-lg: 260px;
+  --h-graph-sm: 220px;
 }
 
-/* 2. Reset / estilos globales básicos */
-* {
+html, body {
   margin: 0;
   padding: 0;
-  box-sizing: border-box;
-}
-
-html, body, #root {
-  width: 100%;
-  height: 100%;
-}
-
-body {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    Helvetica, Arial, sans-serif;
+  color: var(--texto-principal);
   background-color: var(--fondo);
-  font-family: var(--font-base);
-  color: var(--texto-oscuro);
 }
 
-
-
-
-/* @tailwind directives removed because Tailwind CSS is not configured or not being used */
-/* Add your custom CSS here if needed */
-
-/* Evita scroll horizontal en TODA la app */
-html, body {
-  width: 100%;
-  overflow-x: clip; /* si tu build no soporta 'clip', usá hidden */
-}
-
-/* Box-sizing coherente */
-*, *::before, *::after { box-sizing: border-box; }
-
-/* Medios nunca más anchos que el contenedor */
-img, video, canvas, svg {
-  max-width: 100%;
-  height: auto;
-  display: block;
-}

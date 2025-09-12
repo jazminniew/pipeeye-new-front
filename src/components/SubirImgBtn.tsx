@@ -12,7 +12,7 @@ const StyledLink = styled(Link)`
   --btn-bg-color: white;
   --radii: 0.5em;
 
-  padding: 0.9em 0em;
+  padding: 0.9em 0.8em;
   min-width: 180px;
   outline: none;
   font-size: 1rem;
@@ -70,8 +70,8 @@ const StyledLink = styled(Link)`
 const SubirImgBtn = () => {
   return (
     <StyledLink to="/upload">
-      <Icon icon="mdi:upload" width="22" height="22" />
-      <span>Subir imágenes</span>
+      <Icon icon="mdi:upload" width="20" height="22" />
+      <span>Analizar imágenes</span>
     </StyledLink>
   );
 };
