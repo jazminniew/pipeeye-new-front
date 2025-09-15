@@ -1,5 +1,5 @@
 body {
-  background-color: var(--fondo);
+  background-color: var(--fondo) !important; 
 }
 
 /* Layout general */
@@ -13,7 +13,7 @@ body {
 
 
 .todo {
-  padding: var(--pad-page);
+  padding: 0rem 3.2rem;
   display: flex;
   flex-direction: column;
   gap: var(--gap-lg);

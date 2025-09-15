@@ -1,0 +1,7 @@
+/* Administrar.module.css */
+.page {
+  padding: var(--pad-page);
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-lg);
+}

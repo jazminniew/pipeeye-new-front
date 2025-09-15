@@ -6,6 +6,8 @@ import ImageUpload from './pages/ImagesUpload'
 import AnalyzeImages from './pages/AnalyzeImages'
 import History from './pages/History'
 import Landing from './pages/Landing/Landing.tsx'
+import Administrar from '@/pages/Administrar';
+import '@/services'; 
 
 export default function App() {
   return (
@@ -17,6 +19,7 @@ export default function App() {
         <Route path="/upload" element={<ImageUpload />} />
         <Route path="/analyzeImages" element={<AnalyzeImages />} />
         <Route path="/history" element={<History />} /> 
+        <Route path="/administrar" element={<Administrar />} />
       </Routes>
     </BrowserRouter>
   )

@@ -45,7 +45,7 @@
 
 .historialLink {
   display: inline-block;
-  padding: 14px 46px;
+  padding: 12px 46px;
   font-size: 1rem;
   border-radius: 10px;
   text-decoration: none;
@@ -118,3 +118,95 @@ svg{
   height: 34px; /* ajustá según lo que mida el PNG del texto */
   object-fit: contain;
 }
+
+/* src/styles/Navbar.module.css */
+
+/* ...tus estilos existentes... */
+
+.derecha {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+/* ===== PERFIL COMO LINK ===== */
+/* ===== PERFIL COMO LINK ===== */
+.profileLink {
+  position: relative; /* necesario para el ::before */
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  padding: 6px 12px 6px 16px; /* un poco más de padding a la izquierda */
+  border-radius: 12px;
+  margin-left: 8px;
+
+  background: transparent;
+  transition: background 0.25s ease, box-shadow 0.25s ease, transform 0.05s ease;
+  outline: none;
+  color: var(--blanco);
+}
+
+.profileLink::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 20%;
+  bottom: 20%;
+  width: 2px;
+  background: rgba(255, 255, 255, 0.15); /* gris clarito sutil */
+  border-radius: 1px;
+}
+
+
+
+.profileLink:hover {
+  background: color-mix(in srgb, var(--color-primario) 12%, transparent);
+}
+
+.profileLink:active {
+  transform: translateY(1px);
+}
+
+/* foco accesible (teclado) */
+.profileLink:focus-visible {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primario) 60%, transparent);
+  background: color-mix(in srgb, var(--color-primario) 15%, transparent);
+}
+
+.profileAvatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+}
+
+.profileInfo {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+}
+
+.profileName {
+  margin: 0;
+  font-weight: 600;
+  color: var(--blanco);
+}
+
+/* utilitario para texto solo para lectores de pantalla */
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ===== BORRAR/DEJAR DE USAR =====
+   Quitamos el “botón” de rol anterior */
+.rol { display: none; }
+
+/* (Resto de tus estilos originales se mantienen tal cual) */

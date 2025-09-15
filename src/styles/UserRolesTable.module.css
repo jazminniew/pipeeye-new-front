@@ -1,0 +1,247 @@
+/* Contenedor general */
+.wrap { display: grid; gap: 16px; }
+
+/* Header */
+.header { display: flex; align-items: end; justify-content: space-between; gap: 12px; }
+.titleBlock { display: grid; gap: 4px; }
+.title { font-weight: 800; letter-spacing: 0.02em; line-height: 1.1; }
+.subtitle { color: var(--texto-muted, #a1a1aa); font-size: 0.95rem; }
+
+/* ====== CARD de la tabla (estilo AnalyzeImages) ====== */
+.tableAdmin {
+  /* Paleta ajustada */
+  --pe-primary: var(--color-primario, #3C8CFF);
+  --pe-card-bg: #0b1220;
+  --pe-card-grad: #0f1b33;
+  --pe-border: color-mix(in srgb, var(--pe-primary), transparent 60%);  /* más azul */
+  --pe-border-inner: rgba(255,255,255,0.06);
+  --pe-row: #0c1526;
+  --pe-head: #0e1d36;
+
+  position: relative;
+  border-radius: 14px;
+  overflow: clip;
+
+  background:
+    linear-gradient(180deg, var(--pe-card-grad) 0%, transparent 100%),
+    var(--pe-card-bg);
+
+  border: 1px solid var(--pe-border);
+  box-shadow:
+    0 0 0 1px var(--pe-border),
+    inset 0 1px 0 var(--pe-border-inner),
+    0 10px 25px rgba(0,0,0,0.35);
+}
+
+/* Neutralizar fondos Mantine */
+.tableAdmin :global(table) { background: transparent; }
+.tableAdmin :global(thead) { background: transparent; }
+
+/* Thead sticky */
+.thead {
+  position: sticky; top: 0; z-index: 1;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--pe-head), transparent 0%),
+    color-mix(in srgb, var(--pe-head), transparent 30%)
+  );
+  backdrop-filter: blur(6px);
+  /* borde inferior sutil azul para separar */
+  box-shadow: 0 1px 0 color-mix(in srgb, var(--pe-border), transparent 35%);
+}
+
+/* headers */
+.th { font-weight: 700 !important; text-transform: uppercase; letter-spacing: 0.04em; font-size: 12px !important; }
+.thUser { width: 60%; }
+.thRol  { width: 40%; }
+
+/* celdas y filas */
+.tr {
+  transition: background 140ms ease, box-shadow 140ms ease, transform 140ms ease;
+}
+
+.td { padding-block: 12px !important; }
+
+/* filas base */
+.tableAdmin :global(tbody tr) { background: var(--pe-row); }
+
+/* Bordes celdas */
+.tableAdmin :global(th),
+.tableAdmin :global(td) {
+  border-color: color-mix(in srgb, var(--pe-border), transparent 35%) !important;
+}
+
+/* Columna Usuario */
+.userCell { display: flex; align-items: center; gap: 12px; }
+.username { font-weight: 600; letter-spacing: 0.01em; color: #e6eefc; }
+.badgeRow { margin-top: 4px; }
+.userCell :global(.mantine-Avatar-root) { box-shadow: 0 0 0 2px color-mix(in srgb, var(--pe-primary), transparent 75%); }
+
+/* Columna Rol */
+.roleCell { max-width: 280px; }
+.select { width: 100%; }
+
+/* ====== Select Mantine afinado (más azul) ====== */
+.selectInput {
+  height: 36px;
+  border-radius: 10px;
+  border: 1px solid color-mix(in srgb, var(--pe-primary), transparent 55%);
+  background:
+    linear-gradient(180deg,
+      color-mix(in srgb, #0d1c34, transparent 25%) 0%,
+      color-mix(in srgb, #0d1c34, transparent 15%) 100%
+    );
+}
+.selectInput:hover {
+  border-color: color-mix(in srgb, var(--pe-primary), transparent 40%);
+}
+.selectInput:focus-within {
+  outline: 0;
+  border-color: var(--pe-primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--pe-primary), transparent 70%);
+}
+
+/* Dropdown */
+.dropdown {
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--pe-primary), transparent 65%);
+  background: #0d1b2e;
+  box-shadow:
+    0 10px 30px rgba(0,0,0,0.45),
+    0 0 0 1px color-mix(in srgb, var(--pe-primary), transparent 75%) inset;
+}
+
+/* Opciones del dropdown (Mantine v6/v7) */
+.option {
+  /* base */
+  background: transparent;
+  color: var(--texto-principal, #e4e4e7);
+}
+
+.optionSelected {
+  background: color-mix(in srgb, var(--pe-row), var(--pe-primary) 24%);
+  outline: 1px solid color-mix(in srgb, var(--pe-primary), transparent 35%);
+}
+
+/* Botón refrescar */
+.refresh { opacity: 0.85; transition: transform 120ms ease, opacity 120ms ease; }
+.refresh:hover { opacity: 1; transform: rotate(-8deg); }
+
+/* Responsive */
+@media (max-width: 720px) {
+  .thUser { width: auto; }
+  .thRol  { width: auto; }
+  .roleCell { max-width: none; }
+}
+
+/* Toolbar búsqueda + botón */
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+
+}
+.search {
+  flex: 1 1 260px; /* crece, pero no baja de ~260px */
+  min-width: 220px;
+
+  
+}
+.addBtn {
+  white-space: nowrap;
+}
+
+/* ===== Toolbar: searchbar + botón ===== */
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 4px;
+}
+
+/* ============ SEARCHBAR ============ */
+.topBar { display: flex; justify-content: flex-start; }
+
+.searchWrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  background: color-mix(in srgb, var(--blanco) 6%, transparent);
+  border: 1px solid color-mix(in srgb, var(--blanco) 12%, transparent);
+  border-radius: 9999px;
+  padding: 10px 14px;
+  gap: var(--gap-sm);
+  min-width: 320px;
+  max-width: 520px;
+  width: 100%;
+  transition: border-color .2s ease, box-shadow .2s ease, background .2s ease;
+  backdrop-filter: blur(6px);
+}
+
+.searchWrap:hover {
+  border-color: color-mix(in srgb, var(--blanco) 22%, transparent);
+  background: color-mix(in srgb, var(--blanco) 8%, transparent);
+}
+
+.searchWrap:focus-within {
+  border-color: var(--color-primario);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primario) 25%, transparent);
+  background: color-mix(in srgb, var(--blanco) 10%, transparent);
+}
+
+.searchIcon {
+  font-size: 18px;
+  opacity: 0.9;
+  pointer-events: none;
+  color: var(--texto-secundario, #a1a1aa);
+}
+
+.searchInput {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--blanco, #fff);
+  font-size: 14px;
+  line-height: 1.2;
+  padding: 2px 6px;
+}
+
+.searchInput::placeholder {
+  color: color-mix(in srgb, var(--blanco) 65%, transparent);
+}
+
+.clearBtn {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 28px;
+  width: 28px;
+  border-radius: 9999px;
+  border: none;
+  background: color-mix(in srgb, var(--blanco) 12%, transparent);
+  color: var(--blanco, #fff);
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background .15s ease, transform .05s ease;
+}
+.clearBtn:hover { background: color-mix(in srgb, var(--blanco) 20%, transparent); }
+.clearBtn:active { transform: translateY(-50%) scale(0.96); }
+
+/* Botón agregar */
+.addBtn { white-space: nowrap; }
+
+/* Responsive */
+@media (max-width: 720px) {
+  .toolbar { justify-content: stretch; }
+  .addBtn { width: 100%; }
+}

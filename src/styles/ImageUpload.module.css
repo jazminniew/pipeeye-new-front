@@ -47,7 +47,7 @@
   align-items: center;
   text-align: center;
   color: var(--blanco);
-  margin: 40px auto var(--gap-lg);
+  margin: 50px auto var(--gap-lg);
   transition: background .15s ease, border-color .15s ease, box-shadow .15s ease;
 
 }
