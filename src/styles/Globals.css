@@ -24,21 +24,28 @@
   /* Cajas / glass */
   --caja-background: #111A2B;
   --caja-blur: blur(24px);
-  --caja-radius: 16px;
+  --caja-radius: 16px; /* alias histórico, podés migrar a --radius-lg */
+
+  /* Border radius (tokens globales) */
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-full: 9999px;
 
   /* Otros */
   --gap-sm: 0.5rem;
   --gap-md: 1rem;
   --gap-lg: 2rem;
 
-    /*DASHBOARD: ALIAS SOLO DE COLORES QUE NO EXISTEN EN GLOBALS */
+  /* DASHBOARD: alias solo de colores que no existen en globals */
   --cajas: var(--caja-background);
-  --glow-color: var(--color-primario);
+  --glow-color: #0054EC;
   --fondo-dashboard: var(--fondo);
 
   /* compactación (SIN CAMBIOS) */
-  --pad-page: 1.25rem;     /* antes 2rem */
-  --gap-lg: 1rem;          /* antes 2rem */
+  --pad-page: 1.25rem 3rem;     /* antes 2rem */
+  --gap-lg: 1rem;               /* antes 2rem */
   --gap-md: 0.75rem;
 
   /* alturas objetivo (SIN CAMBIOS) */
@@ -55,3 +62,15 @@ html, body {
   background-color: var(--fondo);
 }
 
+.btn-mini {
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.12);
+  color: #e4e4e7;
+  font-size: 12px;
+  padding: 6px 8px;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+}
+.btn-mini:hover {
+  background: rgba(255,255,255,.14);
+}

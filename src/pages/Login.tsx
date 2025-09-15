@@ -4,11 +4,12 @@ import { LoginForm } from '../components/login-form';
 
 export default function Login() {
   return (
-    <div className="relative min-h-screen overflow-hidden">
+    <div className="relative min-h-screen overflow-hidden bg-transparent">
       {/* Fondo animado (no bloquea clics) */}
-      <div className="absolute inset-0 -z-10 pointer-events-none">
+      <div className="absolute inset-0 -z-0 pointer-events-none">
         <DarkVeil />
       </div>
+
 
       {/* Imagotipo arriba a la derecha */}
       <img

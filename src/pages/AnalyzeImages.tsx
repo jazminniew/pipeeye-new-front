@@ -4,6 +4,9 @@ import Navbar from '../components/Navbar';
 import styles from '../styles/AnalyzeImages.module.css';
 import { apiFetch } from '../lib/api';
 import { useNavigate } from 'react-router-dom';
+// arriba de todo con el resto de imports:
+import ModernViewer from "../components/ModernViewer";
+
 
 type Prediccion = {
   x1: number; y1: number; x2: number; y2: number;
@@ -88,28 +91,29 @@ const AnalyzeImages: React.FC = () => {
               <span className={styles.estadoAnalisis}>{estado}</span>
             </div>
 
-            <div className={styles.imageViewer}>
-              {currentImage?.url && (
-                <img
-                  src={currentImage.url}
-                  alt={currentImage.name}
-                  className={styles.previewImage}
-                />
-              )}
-              {currentResultados.map((r, i) => {
-                const x3 = r.x1 + (r.x2 - r.x1) / 2;
-                const y3 = r.y1 + (r.y2 - r.y1) / 2;
-                return (
-                  <div
-                    key={i}
-                    className={styles.marker}
-                    style={{ left: x3 * 0.3, top: y3 * 0.3 }} // px por defecto
-                  >
-                    {r.categoria_nombre}
-                  </div>
-                );
-              })}
-            </div>
+           <div className={styles.imageViewer}>
+  <ModernViewer src={currentImage?.url} className={styles.imageViewer} rotate={-90}>
+    {/* Tus marcadores, igual que antes, se renderizan como children */}
+    {currentResultados.map((r, i) => {
+      const x3 = r.x1 + (r.x2 - r.x1) / 2;
+      const y3 = r.y1 + (r.y2 - r.y1) / 2;
+      return (
+        <div
+          key={i}
+          className={styles.marker}
+          style={{
+            left: x3 * 0.3, // mantenemos tu lógica actual
+            top:  y3 * 0.3,
+            position: "absolute",
+          }}
+        >
+          {r.categoria_nombre}
+        </div>
+      );
+    })}
+  </ModernViewer>
+</div>
+
 
             <div className={styles.statusRow}>{renderEstadoBoton()}</div>
           </div>

@@ -1,21 +1,3 @@
-:root {
-  --azul-fondo: #0c1b2c;
-  --azul-muy-oscuro: #08121f;
-  --rojo: #ff4d4f;
-  --rojo-hover: #e63946;
-  --blanco: #ffffff;
-  --gap-pequeño: 8px;
-  --gap-mediano: 16px;
-  --gap-grande: 24px;
-  --border-radius-md: 8px;
-  --border-radius-lg: 12px;
-  --color-primario: #007BFF;
-  --gris-medio: #d1d1d1;
-  --gris-claro: #bbbbbb;
-  --gris-oscuro: #444;
-  --cajas: #111a2b;
-}
-
 .body {
   display: flex;
   flex-direction: column;
@@ -24,81 +6,103 @@
 
 .container {
   display: flex;
-  padding: 0;
-  margin: 0;
-  gap: var(--gap-grande);
-  background-color: var(--azul-muy-oscuro);
+  gap: var(--gap-lg);
+  background: var(--fondo);
+  height: 100dvh;
+  overflow: hidden;
 }
 
+/* 1) los hijos ocupan todo el ancho disponible dentro del padding */
 .leftSection {
   flex: 1;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  padding: var(--gap-grande);
+  align-items: stretch;
+  padding-inline-start: var(--pad-page);
+  padding-inline-end: 0;
+  padding-block: var(--pad-page);
+  min-height: 0;          /* clave para que respete el alto en flex */
+  overflow-y: auto;       /* ← acá el scroll */
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+}
+.leftScroll {
+  flex: 1 1 auto;
+  min-height: 0;         /* clave */
+  overflow-y: auto;      /* acá está el scroll */
+  padding-right: 8px;    /* margen para la scrollbar */
 }
 
+
 .dropZone {
-  border: 4px dashed rgba(0, 123, 255, 0.20);
+  border: 4px dashed color-mix(in srgb, var(--color-primario) 20%, transparent);
   border-radius: 40px;
-  width: 100%;
+  width: 90%;
   height: 400px;
+  flex: 0 0 400px;     /* <- fija la altura y evita shrink */
+  /* opcional: min-height: 400px; */
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   text-align: center;
   color: var(--blanco);
-  margin-bottom: var(--gap-grande);
-  margin-top: 40px;
+  margin: 40px auto var(--gap-lg);
+  transition: background .15s ease, border-color .15s ease, box-shadow .15s ease;
+
 }
 
-.hiddenInput {
-  display: none;
-}
+.hiddenInput { display: none; }
 
 .customFileButton {
   display: inline-block;
   padding: 12px 24px;
   border-radius: 10px;
   background: var(--color-primario);
-  color: white;
+  color: var(--blanco);
   font-weight: bold;
   cursor: pointer;
-  box-shadow: 0px 1.6px 31.04px 0px rgba(0, 86, 179, 0.57);
+  box-shadow: 0px 1.6px 31.04px 0px color-mix(in srgb, var(--color-primario) 57%, transparent);
   margin-top: 20px;
   transition: background 0.3s ease;
 }
-
-.customFileButton:hover {
-  background: #0056b3;
-}
+.customFileButton:hover { background: var(--color-primario-hover); }
 
 .secondaryText,
 .compatibleText {
   margin-top: 8px;
-  color: #A0A0A0;
+  color: var(--texto-muted);
   font-size: 0.85rem;
 }
 
 .previewContainer {
-  width: 100%;
+  width: 90%;
+  margin-inline: auto;
   background-color: var(--cajas);
-  border-radius: var(--border-radius-lg);
-  padding: var(--gap-mediano);
-  margin-bottom: var(--gap-grande);
-  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: var(--caja-radius);
+  padding: var(--gap-md);
+  margin-bottom: var(--gap-lg);
+  border: 1px solid color-mix(in srgb, var(--blanco) 10%, transparent);
+  box-shadow: 0 4px 10px color-mix(in srgb, var(--negro) 20%, transparent);
+  overflow: visible;       /* ← importante: nada de ocultar acá */
 }
 
+.dropZone         { width: 90%; margin-inline: auto; }
+.previewContainer { width: 90%; margin-inline: auto; }
+
+/* header SIN márgenes laterales extra */
 .previewHeader {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: var(--gap-pequeño);
-  border-bottom: 1px solid rgba(255,255,255,0.1);
-  padding-bottom: var(--gap-pequeño);
+  margin-bottom: var(--gap-sm);
+  border-bottom: 1px solid color-mix(in srgb, var(--blanco) 10%, transparent);
+  padding-bottom: var(--gap-sm);
   position: relative;
+
+  /* ❌ fuera: nada de margin-left/right aquí */
 }
+
 
 .previewHeader h3 {
   color: var(--blanco);
@@ -111,81 +115,103 @@
   position: absolute;
   top: 0;
   right: 0;
-  background: none;
-  border: none;
-  color: var(--rojo);
-  font-size: 1.2rem;
+  background: transparent;
+  border: 1px solid color-mix(in srgb, var(--blanco) 12%, transparent);
+  color: var(--blanco);
+  font-size: 0.75rem;
+  line-height: 1;
+  padding: 4px 8px;
+  border-radius: 999px;
   cursor: pointer;
+}
+.clearAllButton:hover {
+  color: var(--rojo);
+  border-color: color-mix(in srgb, var(--rojo) 40%, transparent);
 }
 
 .fileTable {
   width: 100%;
   border-collapse: collapse;
-  margin-top: var(--gap-pequeño);
+  margin-top: var(--gap-sm);
 }
 
 .fileName {
   color: var(--blanco);
   font-size: 0.95rem;
-  padding: var(--gap-pequeño);
+  padding: var(--gap-sm);
   text-align: left;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  background-color: color-mix(in srgb, var(--blanco) 5%, transparent);
+  border-radius: var(--radius-md);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+  transition: background-color 0.3s ease;
 }
+.fileName:hover { background-color: color-mix(in srgb, var(--blanco) 8%, transparent); }
 
-.actionCell {
-  width: 40px;
-  text-align: center;
-}
+.actionCell { width: 40px; text-align: center; }
 
 .deleteButton {
-  background: none;
+  background: transparent;
   border: none;
   color: var(--rojo);
   font-size: 1rem;
   cursor: pointer;
+  transition: color 0.3s ease, transform 0.2s ease;
+}
+.deleteButton:hover {
+  color: color-mix(in srgb, var(--rojo) 85%, var(--blanco));
+  transform: scale(1.2);
 }
 
 .uploadSection {
-  margin-top: var(--gap-mediano);
+  margin-top: var(--gap-md);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--gap-pequeño);
+  gap: var(--gap-sm);
 }
-
 .uploadSection button {
   padding: 10px 20px;
   font-size: 1rem;
   background-color: var(--color-primario);
-  color: white;
+  color: var(--blanco);
   border: none;
-  border-radius: var(--border-radius-md);
+  border-radius: var(--radius-md);
   cursor: pointer;
 }
-
 .successText {
-  color: lightgreen;
+  color: color-mix(in srgb, var(--verde) 80%, var(--blanco));
   font-size: 0.9rem;
-  margin-top: var(--gap-pequeño);
+  margin-top: var(--gap-sm);
 }
 
 .rightSection {
   flex: 0 0 450px;
   display: flex;
   flex-direction: column;
-  background-color: #191A22;
-  padding: var(--gap-grande);
-  height: 100vh;
-  animation: slideInRight 0.8s ease-out forwards;
+  background-color: var(--caja-background);
+  padding: 30px;
+  height: 100%;
+  overflow: auto;
+  animation-name: slideInRight;
+  animation-duration: 0.8s;
+  animation-timing-function: ease-out;
+  animation-fill-mode: both;
+  will-change: transform, opacity;
 }
 
 .rightSection h2 {
-  color: #fff;
+  color: var(--blanco);
   font-size: 1rem;
   font-weight: 700;
-  margin-bottom: var(--gap-mediano);
+  margin-bottom: var(--gap-md);
+  display: flex;
+  
 }
 
 .rightSection label {
@@ -196,218 +222,222 @@
 
 .rightSection input {
   padding: 10px;
-  border-radius: var(--border-radius-md);
-  border: 1px solid #ffffff13;
-  background-color: #1B243C59;
+  border-radius: var(--radius-md);
+  border: 1px solid color-mix(in srgb, var(--blanco) 7.5%, transparent);
+  background-color: color-mix(in srgb, var(--blanco) 6%, transparent);
   color: var(--gris-medio);
   font-size: 1rem;
-  margin-bottom: var(--gap-pequeño);
+  margin-bottom: var(--gap-sm);
 }
-
-.rightSection input::placeholder {
-  color: var(--gris-claro);
-  opacity: 0.7;
-}
-
-.rightSection input:focus {
-  outline: none;
-}
+.rightSection input::placeholder { color: var(--gris-claro); opacity: 0.7; }
+.rightSection input:focus { outline: none; }
 
 .nextButton {
+  width: 100%;         /* ⬅️ ocupa todo el ancho del contenedor */
+  display: block;      /* por si acaso */
   padding: 10px;
   font-size: 1rem;
   background-color: var(--color-primario);
-  color: white;
+  color: var(--blanco);
   border: none;
-  border-radius: var(--border-radius-md);
+  border-radius: var(--radius-md);
   cursor: pointer;
-  margin-top: var(--gap-mediano);
+  margin-top: 3rem;
 }
+
 
 @keyframes slideInRight {
-  from {
-    transform: translateX(100%);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
+  from { transform: translateX(100%); opacity: 0; }
+  to   { transform: translateX(0);    opacity: 1; }
 }
 
-.previewContainer {
-  width: 100%;
-  background-color: var(--cajas);
-  border-radius: var(--border-radius-lg);
-  padding: var(--gap-mediano);
-  margin-bottom: var(--gap-grande);
-  border: 1px solid rgba(255,255,255,0.1);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-  transition: background-color 0.3s ease;
-}
-
-.previewHeader {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: var(--gap-pequeño);
-  border-bottom: 1px solid rgba(255,255,255,0.1);
-  padding-bottom: var(--gap-pequeño);
-}
-
-.previewHeader h3 {
-  color: var(--blanco);
-  font-size: 1.1rem;
-  margin: 0;
-  font-weight: 600;
-}
-
-.clearAllButton {
-  background: transparent;
-  border: none;
-  color: var(--rojo);
-  font-size: 1.1rem;
-  font-weight: bold;
-  cursor: pointer;
-  padding: 4px 8px;
-  transition: color 0.3s ease, transform 0.2s ease;
-}
-.clearAllButton:hover {
-  color: var(--rojo-hover);
-  transform: scale(1.05);
-}
-
-.fileTable {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: var(--gap-pequeño);
-}
-
-.fileName {
-  color: var(--blanco);
-  font-size: 0.95rem;
-  padding: 10px 8px;
-  background-color: rgba(255, 255, 255, 0.05);
-  border-radius: var(--border-radius-md);
-  margin-bottom: 6px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  transition: background-color 0.3s ease;
-}
-
-.fileName:hover {
-  background-color: rgba(255, 255, 255, 0.08);
-}
-
-.deleteButton {
-  background: transparent;
-  border: none;
-  color: var(--rojo);
-  font-size: 1.1rem;
-  cursor: pointer;
-  transition: color 0.3s ease, transform 0.2s ease;
-}
-
-.deleteButton:hover {
-  color: var(--rojo-hover);
-  transform: scale(1.2);
-}
-
-/* --- Tabs sección derecha --- */
-.tabs {
-  display: flex;
-  gap: 12px;
-  margin-bottom: 18px;
-}
+.tabs { display: flex; gap: 12px; margin-bottom: 18px; }
 
 .tab {
   flex: 1;
   padding: 10px 12px;
   border-radius: 999px;
-  border: 1px solid #2a3b53;
-  background: #2a3344;
-  color: #dfe6f1;
+  border: 1px solid color-mix(in srgb, var(--blanco) 10%, transparent);
+  background: color-mix(in srgb, var(--blanco) 6%, transparent);
+  color: color-mix(in srgb, var(--blanco) 85%, transparent);
   font-weight: 600;
   cursor: pointer;
   transition: transform .08s ease, box-shadow .2s ease, background .2s ease;
 }
 .tab:hover { transform: translateY(-1px); }
+
 .tabActive {
-  background: #1677ff;         /* tu primario */
-  color: white;
-  box-shadow: 0 0 0 3px rgba(22,119,255,.25);
+  background: var(--color-primario);
+  color: var(--blanco);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primario) 25%, transparent);
   border-color: transparent;
 }
-
-/* Selects */
+/* select — dark, sin blanco quemado y con flecha custom */
 .select {
-  padding: 10px;
-  border-radius: var(--border-radius-md);
-  border: 1px solid #ffffff13;
-  background-color: #1B243C59;
-  color: var(--gris-medio);
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+
+  width: 100%;
+  padding: 10px 36px 10px 12px;        /* espacio para la flecha */
+  border-radius: var(--radius-md);
+  border: 1px solid color-mix(in srgb, var(--blanco) 12%, transparent);
+
+  background-color: color-mix(in srgb, var(--blanco) 3%, var(--caja-background));
+  color: var(--texto-principal);
+
   font-size: 1rem;
-  margin-bottom: var(--gap-pequeño);
+  line-height: 1.25;
+  transition: border-color .2s ease, box-shadow .2s ease, background .2s ease;
+
+  /* flecha svg que hereda color secundario */
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23a1a1aa' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 12px;
 }
+
+.select:hover {
+  border-color: color-mix(in srgb, var(--color-primario) 35%, transparent);
+}
+
+.select:focus-visible {
+  outline: none;
+  border-color: var(--color-primario);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primario) 25%, transparent);
+  background-color: color-mix(in srgb, var(--blanco) 4%, var(--caja-background));
+}
+
 .select:disabled {
   opacity: .6;
   cursor: not-allowed;
 }
 
-/* Alineación lista de archivos (mantiene tu look) */
-.fileList { display: flex; flex-direction: column; gap: 6px; }
-
-.selector{
-  align-items: center;
-  display: flex;
-  justify-content: center;
-  padding: 30px;
+/* opciones del menú (soporte varía por navegador, pero ayuda en Chrome/Edge/Firefox modernos) */
+.select option {
+  background-color: var(--caja-background);
+  color: var(--texto-principal);
+}
+.select optgroup {
+  color: var(--texto-secundario);
 }
 
-/* Alinear ícono + label */
+/* quita flecha vieja en IE/Edge heredado (por las dudas) */
+.select::-ms-expand { display: none; }
+
+.fileList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: none;        /* ← quitamos límite */
+  overflow: visible;       /* ← sin scroll interno */
+  padding-right: 0;
+}
+.fileList::-webkit-scrollbar { width: 8px; }
+.fileList::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--blanco) 18%, transparent);
+  border-radius: 8px;
+}
+.fileList::-webkit-scrollbar-track { background: transparent; }
+
+.selector { align-items: center; display: flex; justify-content: center; padding: 30px; }
+
 .fieldLabel {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  color: #fff; /* ajustá a tu paleta */
+  color: var(--blanco);
   margin-top: 14px;
   margin-bottom: 6px;
 }
 
-/* Ionicons como web component; clase global simple */
 :global(.ionIcon) {
-  font-size: 18px;     /* tamaño del ícono */
+  font-size: 18px;
   opacity: 0.9;
   vertical-align: middle;
 }
 
-/* Inputs si querés que combinen con selects */
 .input {
   width: 100%;
   padding: 10px 12px;
   border-radius: 8px;
-  border: 1px solid rgba(255,255,255,0.15);
-  background: rgba(255,255,255,0.06);
-  color: #fff;
+  border: 1px solid color-mix(in srgb, var(--blanco) 15%, transparent);
+  background: color-mix(in srgb, var(--blanco) 6%, transparent);
+  color: var(--blanco);
   outline: none;
 }
-.input::placeholder { color: rgba(255,255,255,0.65); }
+.input::placeholder { color: color-mix(in srgb, var(--blanco) 65%, transparent); }
 .input:focus {
-  border-color: #24A8FF;
-  box-shadow: 0 0 0 3px rgba(36,168,255,0.25);
+  border-color: var(--color-primario);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primario) 25%, transparent);
 }
 
-.fieldLabel {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  color: #fff;
-  margin-top: 14px;
-  margin-bottom: 6px;
-}
-
-.ionIcon { /* la clase la podés renombrar si querés */
+.ionIcon {
   opacity: 0.9;
-  stroke-width: 2.25px; /* más marcado */
+  stroke-width: 2.25px;
+}
+
+.pageLock {
+  height: 100vh;
+  overflow: hidden;
+}
+
+.errorBanner {
+  background: color-mix(in srgb, var(--rojo) 18%, transparent);
+  border: 1px solid color-mix(in srgb, var(--rojo) 35%, transparent);
+  color: color-mix(in srgb, var(--blanco) 90%, transparent);
+  padding: 10px 12px;
+  border-radius: 10px;
+  margin-top: var(--gap-md);
+}
+
+.errorText,
+.fieldError {
+  color: color-mix(in srgb, var(--rojo) 85%, var(--blanco));
+  font-size: 0.85rem;
+  margin: 6px 0 0 2px;
+}
+
+.invalid {
+  border-color: color-mix(in srgb, var(--rojo) 45%, transparent) !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--rojo) 25%, transparent);
+}
+
+/* feedback leve al pasar a válido otra vez */
+.select:not(.invalid):focus,
+.input:not(.invalid):focus {
+  border-color: var(--color-primario);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primario) 25%, transparent);
+}
+
+/* highlight del dropzone cuando se está arrastrando */
+.dropZoneDragging {
+  background: color-mix(in srgb, var(--blanco) 6%, transparent);
+  border-color: color-mix(in srgb, var(--color-primario) 45%, transparent);
+  box-shadow:
+    0 0 0 6px color-mix(in srgb, var(--color-primario) 18%, transparent) inset,
+    0 8px 24px color-mix(in srgb, var(--negro) 35%, transparent);
+}
+
+/* una transición suave ayuda visualmente */
+.dropZone {
+  transition: background .15s ease, border-color .15s ease, box-shadow .15s ease;
+}
+
+/* (opcional) estilá la scrollbar de la columna izquierda */
+.leftSection::-webkit-scrollbar { width: 8px; }
+.leftSection::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--blanco) 18%, transparent);
+  border-radius: 8px;
+}
+.leftSection::-webkit-scrollbar-track { background: transparent; }
+
+.leftSection {
+  overflow-y: auto;
+  scrollbar-width: none;          /* Firefox */
+  -ms-overflow-style: none;       /* IE/Edge antiguo */
+}
+
+.leftSection::-webkit-scrollbar { /* Chrome, Edge, Safari */
+  display: none;
 }

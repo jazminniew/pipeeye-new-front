@@ -8,12 +8,13 @@ import { Icon } from '@iconify/react';
 const Navbar: React.FC = () => {
   return (
     <header className={styles.navbar}>
-      <div className={styles.logo}>
-        <Link to="/dashboard" className={styles.nombreLogo}>
-          <img src="/img/ICONO.png" alt="" className={styles.logoImg} />
-          PipeEye
-        </Link>
-      </div>
+<div className={styles.logo}>
+  <Link to="/dashboard" className={styles.nombreLogo}>
+    <img src="/img/ICONO.png" alt="Ícono PipeEye" className={styles.logoImg} />
+    <img src="/img/IMAGOTIPO.png" alt="PipeEye" className={styles.logoTextImg} />
+  </Link>
+</div>
+
 
       <div className={styles.derecha}>
         <div className={styles.botones}>

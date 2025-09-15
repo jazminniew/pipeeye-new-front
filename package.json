@@ -10,6 +10,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@cornerstonejs/core": "^4.2.3",
+    "@cornerstonejs/dicom-image-loader": "^4.2.3",
+    "@cornerstonejs/tools": "^4.2.3",
     "@gsap/react": "^2.1.2",
     "@iconify/react": "^6.0.0",
     "@radix-ui/react-label": "^2.1.7",
@@ -25,6 +28,7 @@
     "clsx": "^2.1.1",
     "cornerstone-core": "^2.6.1",
     "cornerstone-wado-image-loader": "^4.13.2",
+    "dcmjs": "^0.45.0",
     "dicom-parser": "^1.8.21",
     "gsap": "^3.13.0",
     "lucide-react": "^0.542.0",

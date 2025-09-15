@@ -104,3 +104,17 @@
 svg{
   color: #fff;
 }
+.nombreLogo {
+  display: flex;
+  align-items: center;
+  gap: 8px; /* espacio entre el icono y el texto */
+}
+
+.logoImg {
+  height: 38px; /* ajustá al tamaño que venías usando */
+}
+
+.logoTextImg {
+  height: 34px; /* ajustá según lo que mida el PNG del texto */
+  object-fit: contain;
+}

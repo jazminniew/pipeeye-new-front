@@ -12,18 +12,29 @@ const Dashboard: React.FC = () => {
   const glowRef = useRef<HTMLDivElement>(null);
 
   // 1) Glow que sigue el mouse
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      const x = 30 + (e.clientX / window.innerWidth) * 80;
-      const y = 50 + (e.clientY / window.innerHeight) * 80;
-      if (glowRef.current) {
-        glowRef.current.style.background =
-          `radial-gradient(ellipse 60% 90% at ${x}% ${y}%, #0054EC, transparent 100%)`;
-      }
-    };
-    window.addEventListener("mousemove", handleMouseMove);
-    return () => window.removeEventListener("mousemove", handleMouseMove);
-  }, []);
+  // dentro de Dashboard.tsx
+useEffect(() => {
+  const el = glowRef.current;
+  if (!el) return;
+
+  // leemos el color "natural" desde CSS
+  const root = document.documentElement;
+  const glowColor =
+    getComputedStyle(root).getPropertyValue("--glow-color").trim() || "#0054EC";
+
+  // estado inicial igual al que se usa en el mousemove (sin mover el mouse)
+  el.style.background = `radial-gradient(ellipse 60% 90% at 50% 50%, ${glowColor}, transparent 100%)`;
+
+  const handleMouseMove = (e: MouseEvent) => {
+    const x = 30 + (e.clientX / window.innerWidth) * 80;
+    const y = 50 + (e.clientY / window.innerHeight) * 80;
+    el.style.background = `radial-gradient(ellipse 60% 90% at ${x}% ${y}%, ${glowColor}, transparent 100%)`;
+  };
+
+  window.addEventListener("mousemove", handleMouseMove);
+  return () => window.removeEventListener("mousemove", handleMouseMove);
+}, []);
+
 
 useEffect(() => {
   if (typeof window === "undefined") return;

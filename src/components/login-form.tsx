@@ -141,7 +141,7 @@ export function LoginForm({
                 <Button
                   type="submit"
                   disabled={loading}
-                  className="w-full bg-[#007bff] hover:bg-[#006ae0] text-white border-0 shadow-lg shadow-[#001a33]/30 focus-visible:ring-[#66b2ff]/40 disabled:opacity-60"
+                  className="w-full bg-[#007bff] cursor-pointer hover:bg-[#006ae0] text-white border-0 shadow-lg shadow-[#001a33]/30 focus-visible:ring-[#66b2ff]/40 disabled:opacity-60"
                 >
                   {loading ? "Ingresando..." : "Continuar"}
                 </Button>

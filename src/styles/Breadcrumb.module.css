@@ -1,25 +1,45 @@
-.breadcrumb {
+/* ocupa ancho completo y aplica el padding de página */
+.wrapper {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0 20px;
+}
+
+/* barra glassy tipo searchbar */
+.bar {
   display: flex;
   align-items: center;
-  font-size: 0.875rem;
-  color: var(--gris-medio);
+  gap: 8px;
+  background: transparent;
+  border:  transparent;
+  border-radius: 12px;
+  padding: 10px 14px;
+  backdrop-filter: blur(6px);
+
+  /* que no “salte” de tamaño */
+  min-height: 40px;
+}
+
+/* tipografía y colores */
+.breadcrumb {
+  font-size: 14px;
+  color: var(--texto-secundario);
 }
 
 .link {
   text-decoration: none;
   color: inherit;
-  transition: color 0.2s ease;
+  transition: color .2s ease;
 }
-
-.link:hover {
-  color: var(--color-primario);
-}
+.link:hover { color: var(--color-primario); }
 
 .separator {
   margin: 0 0.5rem;
   user-select: none;
+  opacity: .6;
 }
 
 .current {
-  font-weight: 700;
+  font-weight: 600;
+  color: var(--blanco);
 }

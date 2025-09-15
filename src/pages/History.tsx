@@ -1,11 +1,13 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import Navbar from '../components/Navbar';
-import Empresa from '../components/Empresa';
 import Breadcrumb from '../components/Breadcrumb.tsx';
 import styles from '../styles/History.module.css';
 import type { Proyecto } from '../services/api.ts';
 import { getProyectos } from '../services/api.ts';
-import { Icon } from '@iconify/react'; // 👈 usar icono de lupa
+import { Icon } from '@iconify/react';
+import { useNavigate } from 'react-router-dom';
+import AnimatedHeadline from '@/components/AnimatedHeadline';
+
 
 type EmpresaAgrupada = { nombre: string; cantidad: number };
 
@@ -14,6 +16,7 @@ const History: React.FC = () => {
   const [err, setErr] = useState<string | null>(null);
   const [proyectos, setProyectos] = useState<Proyecto[]>([]);
   const [q, setQ] = useState('');
+  const navigate = useNavigate();
 
   useEffect(() => {
     const run = async () => {
@@ -56,14 +59,19 @@ const History: React.FC = () => {
     <div>
       <Navbar />
       <div className={styles.breadcrumbContainer}>
-        <Breadcrumb items={[{ label: 'Dashboard', to: '/dashboard' }, { label: 'Historial' }]} />
+        <Breadcrumb items={[{ label: 'Dashboard', to: '/dashboard' }, { label: 'Empresas' }]} />
       </div>
 
       <div className={styles.wrapper}>
         <div className={styles.todo}>
-          <h1 className={styles.titulo}>Historial</h1>
+          <AnimatedHeadline
+            text="Empresas"
+            as="h1"
+            className={styles.titulo}
+          />
 
-          {/* 🔎 NUEVA SEARCHBAR */}
+
+          {/* 🔎 SEARCHBAR */}
           <div className={styles.topBar}>
             <div className={styles.searchWrap}>
               <Icon icon="mdi:magnify" className={styles.searchIcon} />
@@ -88,18 +96,41 @@ const History: React.FC = () => {
           </div>
 
           {loading && <div className={styles.msg}>Cargando…</div>}
-          {/* 🧯 ERROR EN BLANCO */}
           {err && !loading && <div className={styles.error}>{err}</div>}
 
           {!loading && !err && (
             <div className={styles.gridContainer}>
               {filtradas.map((e) => (
-                <Empresa
-                  key={e.nombre}
-                  nombre={e.nombre}
-                  proyectosCount={e.cantidad}
-                  to={`/analisis/${encodeURIComponent(e.nombre)}`}
-                />
+                <article key={e.nombre} className={styles.card}>
+                  <div className={styles.cardHeader}>
+                    <div className={styles.avatar} />
+                    <div>
+                      <h3 className={styles.cardTitle}>{e.nombre}</h3>
+                        <p className={styles.cardMeta}>
+                          {e.cantidad} {e.cantidad === 1 ? 'proyecto' : 'proyectos'}
+                        </p>
+
+                    </div>
+                  </div>
+
+                  <div className={styles.cardActions}>
+                    <button
+                        className={`${styles.btn} ${styles.btnSecondary}`}
+                        onClick={() => navigate(`/estadisticas/${encodeURIComponent(e.nombre)}`)}
+                      >
+                        <Icon icon="mdi:chart-line" className={styles.leftIcon} />
+                        Estadísticas
+                      </button>
+                      <button
+                        className={`${styles.btn} ${styles.btnPrimary}`} // 👈 sin btnWide
+                        onClick={() => navigate(`/proyectos/${encodeURIComponent(e.nombre)}`)}
+                      >
+                        <Icon icon="mdi:eye" className={styles.leftIcon} />
+                        Ver proyectos
+                    </button>
+
+                  </div>
+                </article>
               ))}
               {filtradas.length === 0 && <div className={styles.msg}>Sin resultados</div>}
             </div>

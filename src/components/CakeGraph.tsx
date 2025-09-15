@@ -16,26 +16,28 @@ type Props = {
   colors?: string[];
 };
 
-/** Alto por defecto si no se pasa desde el padre */
 const DEFAULT_CAKE_HEIGHT = 300;
 
-/** Data por defecto (cambiá por la tuya si querés) */
 const DEFAULT_DATA: { name: string; value: number }[] = [
   { name: 'Aprobadas', value: 65 },
   { name: 'En revisión', value: 15 },
   { name: 'Reprobadas', value: 20 },
 ];
 
-/** Colores por defecto */
-const DEFAULT_COLORS = ['#4CA3FF', '#4cff9a', '#FF6B6B'];
+/** Paleta solo azules/celestes */
+const DEFAULT_COLORS = ['#60A5FA', '#3B82F6', '#1D4ED8'];
 
-/** Label centrado con porcentaje (sin tocar tu estilo) */
+/** Label centrado: muestra % siempre (sin hover) */
 const renderCustomizedLabel = (props: any) => {
-  const RADIAN = Math.PI / 180;
+  const RAD = Math.PI / 180;
   const { cx, cy, midAngle, innerRadius, outerRadius, percent } = props;
   const r = innerRadius + (outerRadius - innerRadius) * 0.5;
-  const x = cx + r * Math.cos(-midAngle * RADIAN);
-  const y = cy + r * Math.sin(-midAngle * RADIAN);
+  const x = cx + r * Math.cos(-midAngle * RAD);
+  const y = cy + r * Math.sin(-midAngle * RAD);
+
+  // ocultá etiquetas de slices muy chicos si querés:
+  if (percent < 0.04) return null; // < 4%
+
   return (
     <text
       x={x}
@@ -44,59 +46,58 @@ const renderCustomizedLabel = (props: any) => {
       textAnchor="middle"
       dominantBaseline="central"
       fontSize={12}
+      style={{ pointerEvents: 'none' }}
     >
       {`${Math.round(percent * 100)}%`}
     </text>
   );
 };
 
-/** Legend custom tipo “chips” (tipado con readonly) */
+/** Leyenda tipo chips para “qué color es qué” */
 const LegendChips: React.FC<{ payload?: ReadonlyArray<LegendPayload> }> = ({
   payload = [],
-}) => {
-  return (
-    <div
-      style={{
-        display: 'flex',
-        gap: 8,
-        justifyContent: 'center',
-        alignItems: 'center',
-        flexWrap: 'wrap',
-        paddingTop: 8,
-        paddingBottom: 4,
-      }}
-    >
-      {payload.map((entry, i) => (
+}) => (
+  <div
+    style={{
+      display: 'flex',
+      gap: 8,
+      justifyContent: 'center',
+      alignItems: 'center',
+      flexWrap: 'wrap',
+      paddingTop: 8,
+      paddingBottom: 4,
+    }}
+  >
+    {payload.map((entry, i) => (
+      <span
+        key={i}
+        style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: 6,
+          padding: '6px 10px',
+          borderRadius: 999,
+          background: 'rgba(255,255,255,0.08)',
+          color: '#fff',
+          fontSize: 12,
+          lineHeight: 1,
+          whiteSpace: 'nowrap',
+        }}
+      >
         <span
-          key={i}
           style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 6,
-            padding: '6px 10px',
+            width: 10,
+            height: 10,
             borderRadius: 999,
-            background: 'rgba(255,255,255,0.08)',
-            color: '#fff',
-            fontSize: 12,
-            lineHeight: 1,
-            whiteSpace: 'nowrap',
+            background: entry.color ?? '#999',
+            display: 'inline-block',
           }}
-        >
-          <span
-            style={{
-              width: 10,
-              height: 10,
-              borderRadius: 999,
-              background: entry.color ?? '#999',
-              display: 'inline-block',
-            }}
-          />
-          {String(entry.value ?? '')}
-        </span>
-      ))}
-    </div>
-  );
-};
+        />
+        {String(entry.value ?? '')}
+      </span>
+    ))}
+  </div>
+);
 
 const CakeGraph: React.FC<Props> = ({
   height,
@@ -110,7 +111,7 @@ const CakeGraph: React.FC<Props> = ({
     <div
       style={{ width: '100%', height: H, userSelect: 'none' }}
       className={className}
-      onMouseDown={(e) => e.preventDefault()}   // bloquea selección/drag
+      onMouseDown={(e) => e.preventDefault()}
       onDragStart={(e) => e.preventDefault()}
     >
       <ResponsiveContainer width="100%" height="100%">
@@ -121,18 +122,35 @@ const CakeGraph: React.FC<Props> = ({
             nameKey="name"
             cx="50%"
             cy="50%"
-            labelLine={false}
-            label={renderCustomizedLabel}
+            innerRadius={55}
             outerRadius={100}
-            stroke="#2b2b2b"
+            stroke="rgba(255,255,255,0.08)"
             strokeWidth={1}
+            labelLine={false}
+            label={renderCustomizedLabel}  // 👈 porcentajes siempre visibles
+            isAnimationActive
+            animationBegin={100}
+            animationDuration={600}
+            animationEasing="ease-out"
           >
             {data.map((_, idx) => (
               <Cell key={`cell-${idx}`} fill={colors[idx % colors.length]} />
             ))}
           </Pie>
 
-          <Tooltip />
+          <Tooltip
+            contentStyle={{
+              background: 'rgba(17,24,39,0.92)',
+              border: '1px solid rgba(255,255,255,0.08)',
+              borderRadius: 10,
+              color: '#fff',
+              backdropFilter: 'blur(6px)',
+              fontSize: 12,
+            }}
+            itemStyle={{ color: '#fff' }}
+            labelStyle={{ color: 'rgba(255,255,255,0.85)' }}
+          />
+
           <Legend
             verticalAlign="bottom"
             align="center"

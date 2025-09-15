@@ -1,8 +1,9 @@
 /* styles/AnalyzeImages.module.css */
+/* Usa variables de Globals.css (no redefinir :root aquí) */
 
 .body {
-  background-color: #0c0c0c;
-  color: white;
+  background-color: var(--fondo);
+  color: var(--texto-principal);
   min-height: 100vh;
 }
 
@@ -17,10 +18,11 @@
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
-  background-color: #111;
+  background-color: var(--cajas);
   padding: 2rem;
   border-radius: 12px;
-  box-shadow: 0 0 10px rgba(0, 174, 255, 0.1);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--color-primario) 15%, transparent);
+  border: 1px solid color-mix(in srgb, var(--blanco) 10%, transparent);
 }
 
 .imageBox {
@@ -34,12 +36,13 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  color: var(--blanco);
 }
 
 .estadoAnalisis {
   font-size: 0.9rem;
   font-weight: 500;
-  color: #77c8ff;
+  color: var(--color-primario);
   margin-left: 1rem;
 }
 
@@ -47,12 +50,11 @@
   position: relative;
   width: 100%;
   height: 300px;
-  border: 2px solid #333;
+  border: 1px solid color-mix(in srgb, var(--blanco) 12%, transparent);
   border-radius: 6px;
   overflow: hidden;
-  background-color: black;
+  background-color: var(--negro);
 }
-
 
 .previewImage {
   position: absolute;
@@ -64,15 +66,11 @@
   object-fit: contain;
 }
 
-
-
-
-
 .marker {
   position: absolute;
   padding: 4px 8px;
-  background-color: #007bff;
-  color: white;
+  background-color: var(--color-primario);
+  color: var(--blanco);
   font-size: 0.75rem;
   border-radius: 4px;
   transform: translate(-50%, -100%);
@@ -85,32 +83,37 @@
   gap: 1rem;
 }
 
+/* Variante “todo azules” para acoplar al sitio */
 .rechazado {
-  background-color: #b73737;
-  color: white;
+  background-color: color-mix(in srgb, var(--color-primario) 35%, transparent);
+  color: var(--blanco);
   border: none;
   padding: 0.6rem 1.2rem;
   border-radius: 8px;
   cursor: default;
 }
-
 .revision {
-  background-color: #e0b100;
-  color: black;
+  background-color: color-mix(in srgb, var(--color-primario) 55%, transparent);
+  color: var(--blanco);
+  border: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: 8px;
+  cursor: default;
+}
+.aprobado {
+  background-color: var(--color-primario);
+  color: var(--blanco);
   border: none;
   padding: 0.6rem 1.2rem;
   border-radius: 8px;
   cursor: default;
 }
 
-.aprobado {
-  background-color: #1d8742;
-  color: white;
-  border: none;
-  padding: 0.6rem 1.2rem;
-  border-radius: 8px;
-  cursor: default;
-}
+/* Si preferís semáforo, cambia a:
+   .rechazado { background: var(--rojo); }
+   .revision { background: var(--naranja); color: var(--negro); }
+   .aprobado { background: var(--verde); }
+*/
 
 .infoGrid {
   display: flex;
@@ -119,17 +122,18 @@
 }
 
 .infoBox {
-  background-color: #1a1a1a;
+  background-color: color-mix(in srgb, var(--blanco) 6%, transparent);
   padding: 1.5rem;
   border-radius: 10px;
   flex: 1;
   min-width: 280px;
+  border: 1px solid color-mix(in srgb, var(--blanco) 10%, transparent);
 }
 
 .table {
   width: 100%;
   border-collapse: collapse;
-  color: white;
+  color: var(--blanco);
   table-layout: fixed;
 }
 
@@ -137,12 +141,20 @@
 .table td {
   padding: 0.5rem;
   text-align: left;
-  border-bottom: 1px solid #333;
+  border-bottom: 1px solid color-mix(in srgb, var(--blanco) 10%, transparent);
   white-space: nowrap;
+  color: var(--texto-principal);
+}
+
+.table tbody tr { height: 48px; }
+
+.table .emptyRow td {
+  color: var(--texto-muted);
+  font-style: italic;
 }
 
 .progressBar {
-  background-color: #333;
+  background-color: color-mix(in srgb, var(--blanco) 10%, transparent);
   height: 8px;
   border-radius: 4px;
   overflow: hidden;
@@ -150,17 +162,8 @@
 }
 
 .progressBar div {
-  background-color: #3ca2ff;
+  background-color: var(--color-primario);
   height: 100%;
-}
-
-.table tbody tr {
-  height: 48px;
-}
-
-.table .emptyRow td {
-  color: #888;
-  font-style: italic;
 }
 
 .navigationButtons {
@@ -173,20 +176,21 @@
 .navigationButtons button {
   padding: 0.5rem 1rem;
   font-size: 1rem;
-  border: none;
+  border: 1px solid color-mix(in srgb, var(--blanco) 10%, transparent);
   border-radius: 6px;
-  background-color: #333;
-  color: white;
+  background-color: color-mix(in srgb, var(--blanco) 6%, transparent);
+  color: var(--blanco);
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: background-color 0.2s, border-color 0.2s;
 }
 
 .navigationButtons button:hover {
-  background-color: #444;
+  background-color: color-mix(in srgb, var(--color-primario) 18%, transparent);
+  border-color: color-mix(in srgb, var(--color-primario) 28%, transparent);
 }
 
 .navigationButtons button:disabled {
-  background-color: #222;
+  background-color: color-mix(in srgb, var(--blanco) 4%, transparent);
   cursor: not-allowed;
   opacity: 0.5;
 }
