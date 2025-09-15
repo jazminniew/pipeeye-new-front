@@ -1,69 +1,65 @@
-# React + TypeScript + Vite
+# PipeEye
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+🔎 **PipeEye** es una plataforma web con inteligencia artificial que analiza **radiografías de oleoductos** para detectar y clasificar fisuras según estándares internacionales como **API 1104**.  
 
-Currently, two official plugins are available:
+Nuestro objetivo: hacer que el proceso de inspección de ductos sea más **seguro, rápido y confiable**, combinando la experiencia humana con el poder de la IA.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+---
 
-## Expanding the ESLint configuration
+## ✨ ¿Qué hace PipeEye?
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- 📂 **Carga inteligente de imágenes**: subí radiografías en formato DICOM o en lote (ZIP).
+- 🤖 **Análisis con IA**: detección automática de fisuras y clasificación según severidad.
+- 📝 **Interacción manual**: los expertos pueden validar, corregir o marcar resultados.
+- 📊 **Dashboard dinámico**: visualizá estadísticas y resultados de manera clara.
+- 🗂️ **Historial de empresas y proyectos**: buscá y consultá análisis pasados fácilmente.
+- 👥 **Gestión de roles**: clientes, empleados y administradores con accesos diferenciados.
 
-```js
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+---
 
-      // Remove tseslint.configs.recommended and replace with this
-      ...tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      ...tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      ...tseslint.configs.stylisticTypeChecked,
+## 🖥️ ¿Cómo funciona?
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+1. **Subida de imágenes**  
+   El sistema acepta archivos DICOM, asegurando calidad y compatibilidad.
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+2. **Procesamiento en segundo plano**  
+   PipeEye analiza automáticamente las imágenes y va mostrando resultados parciales.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+3. **Validación humana**  
+   El usuario puede aprobar, reprobar o dejar en revisión cada hallazgo.
 
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+4. **Resultados y estadísticas**  
+   Todo queda guardado en un historial accesible, con gráficos y reportes para cada empresa.
+
+---
+
+## 🚀 Tecnologías clave
+
+- **Frontend**: React + TypeScript, con un diseño moderno y profesional.  
+- **Backend**: FastAPI (Python), encargado de gestionar la IA y la comunicación con el cliente.  
+- **IA aplicada**: detección y clasificación automática de fisuras en radiografías industriales.  
+- **Visualización DICOM**: soporte nativo para el formato estándar en radiología.  
+
+---
+
+## 👥 Nuestro equipo
+
+PipeEye fue desarrollado como proyecto final en **ORT Argentina** por un equipo interdisciplinario de 5 estudiantes, combinando:  
+- Desarrollo Frontend  
+- Backend & APIs  
+- Inteligencia Artificial aplicada  
+- UX/UI Design  
+- Gestión y validación técnica junto a **ENOD** (proveedor de datos radiográficos).  
+
+---
+
+## 🌟 Visión
+
+PipeEye busca convertirse en una herramienta clave para la **industria energética**, donde cada inspección cuenta.  
+Nuestro sueño es que ninguna fisura pase desapercibida y que la tecnología potencie la **seguridad de los oleoductos** en todo el mundo.
+
+---
+
+## ⚖️ Licencia
+
+Proyecto académico – © 2025 Equipo PipeEye.
