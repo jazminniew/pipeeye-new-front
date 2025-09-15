@@ -4,7 +4,13 @@
 /* Header */
 .header { display: flex; align-items: end; justify-content: space-between; gap: 12px; }
 .titleBlock { display: grid; gap: 4px; }
-.title { font-weight: 800; letter-spacing: 0.02em; line-height: 1.1; }
+.title {   color: var(--blanco);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: 700;
+  line-height: 0.75;
+  font-size: 24px;
+  margin: 0; }
 .subtitle { color: var(--texto-muted, #a1a1aa); font-size: 0.95rem; }
 
 /* ====== CARD de la tabla (estilo AnalyzeImages) ====== */
@@ -175,8 +181,7 @@
   border-radius: 9999px;
   padding: 10px 14px;
   gap: var(--gap-sm);
-  min-width: 320px;
-  max-width: 520px;
+  min-width: 550px;
   width: 100%;
   transition: border-color .2s ease, box-shadow .2s ease, background .2s ease;
   backdrop-filter: blur(6px);
@@ -244,4 +249,41 @@
 @media (max-width: 720px) {
   .toolbar { justify-content: stretch; }
   .addBtn { width: 100%; }
+}
+
+/* === Botón "Añadir nuevo usuario" con tu estilo === */
+.customAddBtn {
+  display: inline-block;
+  padding: 12px 24px !important;
+  border-radius: 10px !important;
+  background: var(--color-primario);
+  color: var(--blanco);
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0px 1.6px 31.04px 0px color-mix(in srgb, var(--color-primario) 57%, transparent);
+  margin-top: 20px;
+  transition: background 0.3s ease, transform .04s ease, box-shadow .2s ease;
+  border: none;
+  outline: none;
+  /* anula estilos por defecto del Button de Mantine */
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.customAddBtn:hover { background: var(--color-primario-hover); }
+
+.customAddBtn:active { transform: translateY(1px); }
+
+.customAddBtn:focus-visible {
+  box-shadow:
+    0px 1.6px 31.04px 0px color-mix(in srgb, var(--color-primario) 57%, transparent),
+    0 0 0 3px color-mix(in srgb, var(--color-primario) 35%, transparent);
+}
+
+/* Alineación del ícono del lado izquierdo del Button de Mantine */
+.addIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.95;
 }

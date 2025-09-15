@@ -17,6 +17,7 @@ import { IconRefresh, IconShieldLock, IconX, IconSearch, IconUserPlus } from '@t
 import type { Usuario, RolDeUsuario } from '@/types/users';
 import { userService } from '@/services';
 import styles from '../styles/UserRolesTable.module.css';
+import AnimatedHeadline from '@/components/AnimatedHeadline';
 
 const ROL_OPTIONS: { value: RolDeUsuario; label: string }[] = [
   { value: 'admin',      label: 'Administrador' },
@@ -127,11 +128,14 @@ export default function UserRolesTable() {
     <section className={styles.wrap}>
       {/* Header título + refrescar */}
       <div className={styles.header}>
-        <div className={styles.titleBlock}>
-          <Text className={styles.title} fz="lg" fw={500}>
-            Administrar usuarios
-          </Text>
-        </div>
+<div className={styles.titleBlock}>
+  <AnimatedHeadline
+    text="Administrar usuarios"
+    as="h1"
+    className={styles.title}
+  />
+</div>
+
 
         <Tooltip label="Refrescar">
           <ActionIcon
@@ -172,15 +176,16 @@ export default function UserRolesTable() {
         </div>
 
         <Button
-          className={styles.addBtn}
-          leftSection={<IconUserPlus size={18} />}
+          type="button"
+          variant="unstyled"
+          className={styles.customAddBtn}
+          leftSection={<IconUserPlus size={18} className={styles.addIcon} />}
           onClick={() => {
-            // TODO: abrir modal o navegar a formulario de alta
-            // p.ej: navigate('/admin/users/new') o setOpened(true)
-            console.log('Añadir nuevo usuario');
+            console.log('Nuevo usuario');
+            // TODO: abrir modal o navegar
           }}
         >
-          Añadir nuevo usuario
+          Nuevo usuario
         </Button>
       </div>
 
