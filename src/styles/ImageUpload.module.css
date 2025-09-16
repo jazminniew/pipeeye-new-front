@@ -438,6 +438,6 @@
   -ms-overflow-style: none;       /* IE/Edge antiguo */
 }
 
-.leftSection::-webkit-scrollbar { /* Chrome, Edge, Safari */
+.leftSection::-webkit-scrollbar { 
   display: none;
 }

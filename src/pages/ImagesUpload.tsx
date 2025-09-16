@@ -1,30 +1,43 @@
+// src/pages/ImageUpload.tsx
 import React, { useEffect, useState, useRef } from 'react';
-import { X } from 'lucide-react';
+import { X, Building2, FileText } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+
 import * as cornerstone from 'cornerstone-core';
 import * as cornerstoneWADOImageLoader from 'cornerstone-wado-image-loader';
 import * as dicomParser from 'dicom-parser';
+
 import { useDicomStore } from '../store/dicomStore';
 import Header from '../components/Navbar';
 import styles from '../styles/ImageUpload.module.css';
 import { apiFetch } from '../lib/api';
 import ProyectoSelector, { type ModoProyecto } from '../components/RadioBtn';
-import { Building2, FileText } from 'lucide-react';
 import '../styles/Globals.css';
 
+
+// ===== DEBUG: acceso rápido al store desde DevTools
+// @ts-ignore
+if (typeof window !== 'undefined') (window as any).__dicom = { s: useDicomStore };
+
+// ===== Cornerstone wiring
 cornerstoneWADOImageLoader.external.cornerstone = cornerstone;
 cornerstoneWADOImageLoader.external.dicomParser = dicomParser;
-
-cornerstoneWADOImageLoader.webWorkerManager.initialize({
-  webWorkerPath: '/cornerstone/cornerstoneWADOImageLoaderWebWorker.js',
-  taskConfiguration: {
-    decodeTask: {
-      codecsPath: '/cornerstone/cornerstoneWADOImageLoaderCodecs.js',
+try {
+  cornerstoneWADOImageLoader.webWorkerManager.initialize({
+    webWorkerPath: '/cornerstone/cornerstoneWADOImageLoaderWebWorker.js',
+    taskConfiguration: {
+      decodeTask: {
+        codecsPath: '/cornerstone/cornerstoneWADOImageLoaderCodecs.js',
+      },
     },
-  },
-});
+  });
+  // eslint-disable-next-line no-console
+  console.log('[UP] WebWorkers cornerstone inicializados');
+} catch (e) {
+  console.error('[UP] Error inicializando webWorkerManager:', e);
+}
 
-// ====== SOLO FAKE DATA PARA UI ======
+// ====== FAKE DATA (UI)
 const EMPRESAS_FAKE = ['ENOD', 'Empresa2', 'Empresa3', 'Empresa4'] as const;
 const PROYECTOS_FAKE: Record<(typeof EMPRESAS_FAKE)[number], string[]> = {
   ENOD: ['Oleoducto Sur', 'Inspección Q3', 'Reparación 12B'],
@@ -32,7 +45,6 @@ const PROYECTOS_FAKE: Record<(typeof EMPRESAS_FAKE)[number], string[]> = {
   Empresa3: ['Gasoducto Norte', 'Relevamiento Anual'],
   Empresa4: ['Planta Dock Sud', 'Parada de Planta'],
 };
-// ID fijo mientras todo es fake (cámbialo cuando uses el real)
 const PROYECTO_ID_POST = 2;
 
 type Preview = { name: string; url: string };
@@ -44,22 +56,20 @@ const ImageUpload: React.FC = () => {
   const [subiendo, setSubiendo] = useState(false);
   const [errores, setErrores] = useState<Errores>({});
 
-  // drag & drop state
+  // drag & drop
   const [isDragging, setIsDragging] = useState(false);
   const dragDepthRef = useRef(0);
 
-  // derecha (común)
+  // derecha (selector)
   const [modo, setModo] = useState<ModoProyecto>('existente');
-
-  // existente
   const [empresaSel, setEmpresaSel] = useState<string>('');
   const [proyectoSel, setProyectoSel] = useState<string>('');
-
-  // nuevo
   const [empresaNueva, setEmpresaNueva] = useState('');
   const [proyectoNuevo, setProyectoNuevo] = useState('');
 
   const navigate = useNavigate();
+
+  // store
   const setFormInfo = useDicomStore((s) => s.setFormInfo);
   const setPreviews = useDicomStore((s) => s.setPreviews);
   const setTaskId = useDicomStore((s) => s.setTaskId);
@@ -67,17 +77,15 @@ const ImageUpload: React.FC = () => {
 
   const inputRef = useRef<HTMLInputElement>(null);
 
-  function capitalize(value: string): string {
-    if (!value) return '';
-    return value.charAt(0).toUpperCase() + value.slice(1).toLowerCase();
-  }
+  // util
+  const capitalize = (v: string) => (v ? v[0].toUpperCase() + v.slice(1).toLowerCase() : '');
 
-  // reset proyecto cuando cambia empresa en modo existente
+  // reset proyecto cuando cambia empresa
   useEffect(() => {
     setProyectoSel('');
   }, [empresaSel]);
 
-  // Evitar que el navegador “abra” archivos si los soltás fuera del dropzone
+  // evitar abrir archivos fuera del dropzone
   useEffect(() => {
     const prevent = (e: DragEvent) => e.preventDefault();
     window.addEventListener('dragover', prevent);
@@ -88,105 +96,115 @@ const ImageUpload: React.FC = () => {
     };
   }, []);
 
-  // -------- drag & drop utils ----------
- // Poné esto en lugar de tu pickDicoms
-function pickDicoms(list: FileList | File[] | null | undefined): File[] {
-  if (!list) return [];
-  // tipamos explícitamente el array de entrada
-  const arr: File[] = Array.isArray(list) ? list : Array.from(list as FileList);
-
-  // devolvemos sólo .dcm (algunos vienen sin type -> miramos extensión)
-  return arr.filter((f: File) => {
-    const name = f.name?.toLowerCase?.() ?? "";
-    const type = f.type ?? "";
-    return (
-      name.endsWith(".dcm") ||
-      type === "application/dicom" ||
-      (type === "" && name.endsWith(".dcm"))
-    );
-  });
-}
-
-
+  // ======== Utils de filtrado DICOM
+  function pickDicoms(list: FileList | File[] | null | undefined): File[] {
+    if (!list) return [];
+    const arr: File[] = Array.isArray(list) ? list : Array.from(list as FileList);
+    const out = arr.filter((f: File) => {
+      const name = f.name?.toLowerCase?.() ?? '';
+      const type = f.type ?? '';
+      return (
+        name.endsWith('.dcm') ||
+        type === 'application/dicom' ||
+        (type === '' && name.endsWith('.dcm'))
+      );
+    });
+    console.log('[UP] pickDicoms →', out.length, 'de', arr.length);
+    return out;
+  }
+const filesRef = useRef<File[]>([]);
+useEffect(() => { filesRef.current = files; }, [files]);
+  // ======== Generación de previews + guardado en store (con logs fuertes)
   async function ingestFiles(newFiles: File[]) {
+    console.log('[UP] ingestFiles newFiles:', newFiles.length);
+
     // dedupe por name+size+mtime
     const keyOf = (f: File) => `${f.name}::${f.size}::${f.lastModified}`;
-    const newOnes: File[] = [];
+    const existingKeys = new Set(filesRef.current.map(keyOf));
+const newOnes = newFiles.filter(f => !existingKeys.has(keyOf(f)));
+console.log('[UP] dedupe fuera del setState → newOnes:', newOnes.length);
 
-    setFiles((prev) => {
-      const next = [...prev];
-      const existingKeys = new Set(prev.map(keyOf));
-      for (const f of newFiles) {
-        const k = keyOf(f);
-        if (!existingKeys.has(k)) {
-          next.push(f);
-          newOnes.push(f);
-          existingKeys.add(k);
-        }
-      }
-      return next;
-    });
+    
+   setFiles([...filesRef.current, ...newOnes]);
 
-    // generar previews para los nuevos
+    const before = useDicomStore.getState().previews ?? [];
+    console.log('[UP] previews antes:', before.length);
+
     const newPreviews: Preview[] = [];
     for (const file of newOnes) {
+      console.log('[UP] cargando DICOM:', file.name, file.size, file.type);
       const imageId = cornerstoneWADOImageLoader.wadouri.fileManager.add(file);
+
       try {
-        const image = await cornerstone.loadAndCacheImage(imageId);
+        const image: any = await cornerstone.loadAndCacheImage(imageId);
+        console.log('[UP] cornerstone OK →', file.name, { w: image.width, h: image.height });
+
+        // Render a canvas
         const canvas = document.createElement('canvas');
         canvas.width = image.width;
         canvas.height = image.height;
         const ctx = canvas.getContext('2d');
-        if (!ctx) continue;
+        if (!ctx) {
+          console.warn('[UP] sin 2D context para', file.name);
+          continue;
+        }
 
-        const imageData = ctx.createImageData(image.width, image.height);
         const pixelData = image.getPixelData() as Uint16Array | Uint8Array;
-        const slope = (image as any).slope ?? 1;
-        const intercept = (image as any).intercept ?? 0;
-        const wc = Array.isArray((image as any).windowCenter)
-          ? (image as any).windowCenter[0]
-          : (image as any).windowCenter ?? 128;
-        const ww = Array.isArray((image as any).windowWidth)
-          ? (image as any).windowWidth[0]
-          : (image as any).windowWidth ?? 256;
+        const imageData = ctx.createImageData(image.width, image.height);
+
+        const slope = image.slope ?? 1;
+        const intercept = image.intercept ?? 0;
+        const wc = Array.isArray(image.windowCenter) ? image.windowCenter[0] : image.windowCenter ?? 128;
+        const ww = Array.isArray(image.windowWidth) ? image.windowWidth[0] : image.windowWidth ?? 256;
 
         for (let i = 0; i < pixelData.length; i++) {
-          const modalityLutValue = Number(pixelData[i]) * slope + intercept;
-          const grayscale = Math.min(
-            255,
-            Math.max(0, ((modalityLutValue - (wc - 0.5)) / (ww - 1) + 0.5) * 255)
-          );
+          const modality = Number(pixelData[i]) * slope + intercept;
+          const grayscale = Math.min(255, Math.max(0, ((modality - (wc - 0.5)) / (ww - 1) + 0.5) * 255));
           imageData.data[i * 4 + 0] = grayscale;
           imageData.data[i * 4 + 1] = grayscale;
           imageData.data[i * 4 + 2] = grayscale;
           imageData.data[i * 4 + 3] = 255;
         }
         ctx.putImageData(imageData, 0, 0);
-        newPreviews.push({ name: file.name, url: canvas.toDataURL('image/png') });
+
+        const url = canvas.toDataURL('image/png');
+        console.log('[UP] preview creada:', file.name, 'len:', url.length, 'head:', url.slice(0, 30));
+        newPreviews.push({ name: file.name, url });
       } catch (err) {
-        console.error(`Error cargando imagen DICOM ${file.name}:`, err);
+        console.error('[UP] Error cargando DICOM:', file.name, err);
       }
     }
 
     const curr = (useDicomStore.getState().previews as Preview[] | undefined) ?? [];
-    setPreviews([...curr, ...newPreviews]);
+    const next = [...curr, ...newPreviews];
+
+    console.log('[UP] setPreviews → add:', newPreviews.length, 'total:', next.length);
+    console.log('[UP] ejemplo next[0]:', next[0] ? { name: next[0].name, url: next[0].url.slice(0, 40) } : null);
+
+    setPreviews(next);
+
+    // verificar que quedó almacenado
+    setTimeout(() => {
+      const check = useDicomStore.getState().previews as Preview[] | undefined;
+      console.log('[UP] store luego de setPreviews:', check?.length, 'ej:', check?.[0]);
+    }, 0);
   }
 
-  // -------- inputs ----------
-const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-  const input = e.currentTarget;
-  const picked: File[] = pickDicoms(e.target.files);
-  if (!picked.length) {
-    setErrores({ files: "Elegí archivos .dcm" });
-  } else {
-    setErrores((prev) => ({ ...prev, files: undefined }));
-    await ingestFiles(picked);
-  }
-  input.value = "";
-};
+  // ======== Inputs
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    console.log('[UP] onChange files:', e.target.files?.length);
+    const picked: File[] = pickDicoms(e.target.files);
+    if (!picked.length) {
+      setErrores({ files: 'Elegí archivos .dcm' });
+    } else {
+      setErrores((prev) => ({ ...prev, files: undefined }));
+      await ingestFiles(picked);
+    }
+    // reset del input
+    e.currentTarget.value = '';
+  };
 
-
-  // -------- drag handlers ----------
+  // ======== Drag & Drop
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.dataTransfer.dropEffect = 'copy';
@@ -205,41 +223,38 @@ const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
   };
 
   const handleDrop = async (e: React.DragEvent<HTMLDivElement>) => {
-  e.preventDefault();
-  dragDepthRef.current = 0;
-  setIsDragging(false);
+    e.preventDefault();
+    dragDepthRef.current = 0;
+    setIsDragging(false);
 
-  const dt = e.dataTransfer;
+    console.log('[UP] drop items:', e.dataTransfer.items?.length, 'files:', e.dataTransfer.files?.length);
 
-  // De items a File[], bien tipado
-  const fromItems: File[] = [];
-  if (dt.items && dt.items.length) {
-    for (const it of Array.from(dt.items)) {
-      if (it.kind === "file") {
-        const f = it.getAsFile();
-        if (f) fromItems.push(f);
+    const fromItems: File[] = [];
+    if (e.dataTransfer.items && e.dataTransfer.items.length) {
+      for (const it of Array.from(e.dataTransfer.items)) {
+        if (it.kind === 'file') {
+          const f = it.getAsFile();
+          if (f) fromItems.push(f);
+        }
       }
     }
-  }
+    const fallback: File[] = e.dataTransfer.files ? Array.from(e.dataTransfer.files) : [];
+    const all: File[] = fromItems.length ? fromItems : fallback;
 
-  // Si no hubo items, usamos FileList -> File[]
-  const fallback: File[] = dt.files ? Array.from(dt.files) : [];
-  const all: File[] = fromItems.length ? fromItems : fallback;
+    const dicoms: File[] = pickDicoms(all);
+    console.log('[UP] drop dicoms →', dicoms.length);
 
-  const dicoms: File[] = pickDicoms(all);
-  if (!dicoms.length) {
-    setErrores({ files: "Arrastrá únicamente archivos .dcm" });
-    return;
-  }
-  setErrores((prev) => ({ ...prev, files: undefined }));
-  await ingestFiles(dicoms);
-};
+    if (!dicoms.length) {
+      setErrores({ files: 'Arrastrá únicamente archivos .dcm' });
+      return;
+    }
+    setErrores((prev) => ({ ...prev, files: undefined }));
+    await ingestFiles(dicoms);
+  };
 
-
-  // -------- continuar ----------
+  // ======== Continuar
   const handleUploadAndNext = async () => {
     const nextErrors: Errores = {};
-
     if (files.length === 0) nextErrors.files = 'Subí al menos una imagen .dcm';
 
     if (modo === 'existente') {
@@ -253,22 +268,15 @@ const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     setErrores(nextErrors);
     if (Object.keys(nextErrors).length > 0) return;
 
-    let clienteNombre = '';
-    let proyectoNombre = '';
-
-    if (modo === 'existente') {
-      clienteNombre = empresaSel;
-      proyectoNombre = proyectoSel;
-    } else {
-      clienteNombre = empresaNueva.trim();
-      proyectoNombre = proyectoNuevo.trim();
-    }
+    const clienteNombre = modo === 'existente' ? empresaSel : empresaNueva.trim();
+    const proyectoNombre = modo === 'existente' ? proyectoSel : proyectoNuevo.trim();
 
     setSubiendo(true);
     try {
       const formData = new FormData();
       files.forEach((file) => formData.append('files', file));
 
+      console.log('[UP] POST /upload-imgs-in-background con', files.length, 'archivos');
       const data = await apiFetch<{ task_id: string }>(
         `/upload-imgs-in-background/?proyecto_id=${PROYECTO_ID_POST}`,
         { method: 'POST', body: formData }
@@ -281,6 +289,11 @@ const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
           proyecto: proyectoNombre,
           fecha: new Date().toISOString(),
         });
+
+        // LOG CLAVE: el store antes de navegar
+        const st = useDicomStore.getState();
+        console.log('[UP] PRE-NAV previews:', st.previews?.length, 'ej:', st.previews?.[0]);
+        console.log('[UP] PRE-NAV formInfo:', st.formInfo, 'taskId:', st.taskId);
 
         navigate('/analyzeImages');
       } else {
@@ -299,22 +312,22 @@ const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     }
   };
 
+  // ======== Remover/limpiar
   const handleRemoveFile = (index: number) => {
     setFiles((prev) => prev.filter((_, i) => i !== index));
-
     const nextPreviews: Preview[] = (previews ?? []).filter((_, i) => i !== index);
+    console.log('[UP] remove file idx:', index, 'previews ->', nextPreviews.length);
     setPreviews(nextPreviews);
   };
 
   const handleClearAll = () => {
+    console.log('[UP] clear all');
     setFiles([]);
     setPreviews([]);
     if (inputRef.current) inputRef.current.value = '';
   };
 
-  const botonDeshabilitado = subiendo;
-
-  // IDs para labels/inputs (accesibilidad)
+  // ======== IDs (accesibilidad)
   const idEmpresaExist = 'empresa-existente';
   const idProyectoExist = 'proyecto-existente';
   const idEmpresaNueva = 'empresa-nueva';
@@ -337,6 +350,7 @@ const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
               <strong>{isDragging ? 'Soltá para subir .dcm' : 'Arrastrá tus imágenes DICOM'}</strong>
             </p>
             <p className={styles.secondaryText}>o hacé clic para seleccionar archivos</p>
+
             <label htmlFor="fileInput" className={styles.customFileButton}>
               Seleccionar
             </label>
@@ -355,135 +369,124 @@ const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
 
           {files.length > 0 && (
             <div className={styles.previewContainer}>
-                <div className={styles.leftScroll}>
-              <div className={styles.previewHeader}>
-                <h3>Archivos seleccionados</h3>
-                <button
-                  type="button"
-                  className={styles.clearAllButton}
-                  onClick={handleClearAll}
-                >
-                  Limpiar
-                </button>
-              </div>
-              {errores.files && <p className={styles.errorText}>{errores.files}</p>}
+              <div className={styles.leftScroll}>
+                <div className={styles.previewHeader}>
+                  <h3>Archivos seleccionados</h3>
+                  <button type="button" className={styles.clearAllButton} onClick={handleClearAll}>
+                    Limpiar
+                  </button>
+                </div>
 
-              <div className={styles.fileList}>
-                {files.map((file, idx) => (
-                  <div key={idx} className={styles.fileName}>
-                    <span>{file.name}</span>
-                    <button
-                      type="button"
-                      className={styles.deleteButton}
-                      onClick={() => handleRemoveFile(idx)}
-                      aria-label={`Eliminar ${file.name}`}
-                      title="Eliminar"
-                    >
-                      <X size={16} />
-                    </button>
-                  </div>
-                ))}
+                {errores.files && <p className={styles.errorText}>{errores.files}</p>}
+
+                <div className={styles.fileList}>
+                  {files.map((file, idx) => (
+                    <div key={idx} className={styles.fileName}>
+                      <span>{file.name}</span>
+                      <button
+                        type="button"
+                        className={styles.deleteButton}
+                        onClick={() => handleRemoveFile(idx)}
+                        aria-label={`Eliminar ${file.name}`}
+                        title="Eliminar"
+                      >
+                        <X size={16} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
             </div>
           )}
         </div>
 
         {/* DERECHA */}
         <div className={styles.rightSection}>
-          {/* dejaste este inner, lo mantengo sin tocar */}
-            <div className={styles.selector}>
-              <ProyectoSelector value={modo} onChange={setModo} />
-            </div>
-
-            <h2>Completar la siguiente información:</h2>
-
-            {modo === 'existente' ? (
-              <>
-                <div className={styles.fieldLabel}>
-                  <Building2 size={20} className={styles.ionIcon} />
-                  <label htmlFor={idEmpresaExist}>Empresa</label>
-                </div>
-                <select
-                  id={idEmpresaExist}
-                  className={styles.select}
-                  value={empresaSel}
-                  onChange={(e) => setEmpresaSel(e.target.value)}
-                >
-                  <option value="">Nombre empresa</option>
-                  {EMPRESAS_FAKE.map((n) => (
-                    <option key={n} value={n}>
-                      {n}
-                    </option>
-                  ))}
-                </select>
-
-                <div className={styles.fieldLabel}>
-                  <FileText size={20} className={styles.ionIcon} />
-                  <label htmlFor={idProyectoExist}>Proyecto</label>
-                </div>
-                <select
-                  id={idProyectoExist}
-                  className={styles.select}
-                  value={proyectoSel}
-                  onChange={(e) => setProyectoSel(e.target.value)}
-                  disabled={!empresaSel}
-                >
-                  <option value="">Nombre del proyecto</option>
-                  {(empresaSel
-                    ? PROYECTOS_FAKE[empresaSel as keyof typeof PROYECTOS_FAKE]
-                    : []
-                  ).map((p) => (
-                    <option key={p} value={p}>
-                      {p}
-                    </option>
-                  ))}
-                </select>
-              </>
-            ) : (
-              <>
-                <div className={styles.fieldLabel}>
-                  <Building2 size={20} className={styles.ionIcon} />
-                  <label htmlFor={idEmpresaNueva}>Empresa</label>
-                </div>
-                <input
-                  id={idEmpresaNueva}
-                  className={styles.input}
-                  placeholder="Nombre empresa"
-                  value={empresaNueva}
-                  onChange={(e) => setEmpresaNueva(capitalize(e.target.value))}
-                />
-
-                <div className={styles.fieldLabel}>
-                  <FileText size={20} className={styles.ionIcon} />
-                  <label htmlFor={idProyectoNuevo}>Proyecto</label>
-                </div>
-                <input
-                  id={idProyectoNuevo}
-                  className={styles.input}
-                  placeholder="Nombre del proyecto"
-                  value={proyectoNuevo}
-                  onChange={(e) => setProyectoNuevo(capitalize(e.target.value))}
-                />
-              </>
-            )}
-
-            <button
-              className={styles.nextButton}
-              onClick={handleUploadAndNext}
-              disabled={botonDeshabilitado}
-            >
-              {subiendo ? 'Subiendo…' : 'Siguiente'}
-            </button>
-
-            {(errores.files || errores.empresa || errores.proyecto) && (
-              <div className={styles.errorBanner} role="alert">
-                <span>Asegurate de completar todos los campos.</span>
-              </div>
-            )}
+          <div className={styles.selector}>
+            <ProyectoSelector value={modo} onChange={setModo} />
           </div>
+
+          <h2>Completar la siguiente información:</h2>
+
+          {modo === 'existente' ? (
+            <>
+              <div className={styles.fieldLabel}>
+                <Building2 size={20} className={styles.ionIcon} />
+                <label htmlFor={idEmpresaExist}>Empresa</label>
+              </div>
+              <select
+                id={idEmpresaExist}
+                className={styles.select}
+                value={empresaSel}
+                onChange={(e) => setEmpresaSel(e.target.value)}
+              >
+                <option value="">Nombre empresa</option>
+                {EMPRESAS_FAKE.map((n) => (
+                  <option key={n} value={n}>
+                    {n}
+                  </option>
+                ))}
+              </select>
+
+              <div className={styles.fieldLabel}>
+                <FileText size={20} className={styles.ionIcon} />
+                <label htmlFor={idProyectoExist}>Proyecto</label>
+              </div>
+              <select
+                id={idProyectoExist}
+                className={styles.select}
+                value={proyectoSel}
+                onChange={(e) => setProyectoSel(e.target.value)}
+                disabled={!empresaSel}
+              >
+                <option value="">Nombre del proyecto</option>
+                {(empresaSel ? PROYECTOS_FAKE[empresaSel as keyof typeof PROYECTOS_FAKE] : []).map((p) => (
+                  <option key={p} value={p}>
+                    {p}
+                  </option>
+                ))}
+              </select>
+            </>
+          ) : (
+            <>
+              <div className={styles.fieldLabel}>
+                <Building2 size={20} className={styles.ionIcon} />
+                <label htmlFor={idEmpresaNueva}>Empresa</label>
+              </div>
+              <input
+                id={idEmpresaNueva}
+                className={styles.input}
+                placeholder="Nombre empresa"
+                value={empresaNueva}
+                onChange={(e) => setEmpresaNueva(capitalize(e.target.value))}
+              />
+
+              <div className={styles.fieldLabel}>
+                <FileText size={20} className={styles.ionIcon} />
+                <label htmlFor={idProyectoNuevo}>Proyecto</label>
+              </div>
+              <input
+                id={idProyectoNuevo}
+                className={styles.input}
+                placeholder="Nombre del proyecto"
+                value={proyectoNuevo}
+                onChange={(e) => setProyectoNuevo(capitalize(e.target.value))}
+              />
+            </>
+          )}
+
+          <button className={styles.nextButton} onClick={handleUploadAndNext} disabled={subiendo}>
+            {subiendo ? 'Subiendo…' : 'Siguiente'}
+          </button>
+
+          {(errores.files || errores.empresa || errores.proyecto) && (
+            <div className={styles.errorBanner} role="alert">
+              <span>Asegurate de completar todos los campos.</span>
+            </div>
+          )}
         </div>
       </div>
+    </div>
   );
 };
 

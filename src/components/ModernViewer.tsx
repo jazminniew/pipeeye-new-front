@@ -11,6 +11,8 @@ type Props = {
 const ModernViewer: React.FC<Props> = ({ src, className, rotate = -90, children }) => {
   const wrapRef = useRef<HTMLDivElement>(null);
   const imgRef = useRef<HTMLImageElement>(null);
+  console.log('[ModernViewer] src:', src ? src.slice(0, 80) : src);
+
 
   const [scale, setScale] = useState(1);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
@@ -97,6 +99,14 @@ const ModernViewer: React.FC<Props> = ({ src, className, rotate = -90, children 
             willChange: "transform",
             pointerEvents: "none",
           }}
+
+          onLoad={(e) => {
+    const t = e.currentTarget;
+    console.log('[ModernViewer] onLoad natural:', t.naturalWidth, t.naturalHeight);
+  }}
+  onError={(e) => {
+    console.error('[ModernViewer] onError IMG. src=', (e.currentTarget as HTMLImageElement).src);
+  }}
         />
       )}
 
