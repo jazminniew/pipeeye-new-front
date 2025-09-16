@@ -14,28 +14,17 @@ import { apiFetch } from '../lib/api';
 import ProyectoSelector, { type ModoProyecto } from '../components/RadioBtn';
 import '../styles/Globals.css';
 
-
-// ===== DEBUG: acceso rápido al store desde DevTools
-// @ts-ignore
-if (typeof window !== 'undefined') (window as any).__dicom = { s: useDicomStore };
-
 // ===== Cornerstone wiring
 cornerstoneWADOImageLoader.external.cornerstone = cornerstone;
 cornerstoneWADOImageLoader.external.dicomParser = dicomParser;
-try {
-  cornerstoneWADOImageLoader.webWorkerManager.initialize({
-    webWorkerPath: '/cornerstone/cornerstoneWADOImageLoaderWebWorker.js',
-    taskConfiguration: {
-      decodeTask: {
-        codecsPath: '/cornerstone/cornerstoneWADOImageLoaderCodecs.js',
-      },
+cornerstoneWADOImageLoader.webWorkerManager.initialize({
+  webWorkerPath: '/cornerstone/cornerstoneWADOImageLoaderWebWorker.js',
+  taskConfiguration: {
+    decodeTask: {
+      codecsPath: '/cornerstone/cornerstoneWADOImageLoaderCodecs.js',
     },
-  });
-  // eslint-disable-next-line no-console
-  console.log('[UP] WebWorkers cornerstone inicializados');
-} catch (e) {
-  console.error('[UP] Error inicializando webWorkerManager:', e);
-}
+  },
+});
 
 // ====== FAKE DATA (UI)
 const EMPRESAS_FAKE = ['ENOD', 'Empresa2', 'Empresa3', 'Empresa4'] as const;
@@ -100,7 +89,7 @@ const ImageUpload: React.FC = () => {
   function pickDicoms(list: FileList | File[] | null | undefined): File[] {
     if (!list) return [];
     const arr: File[] = Array.isArray(list) ? list : Array.from(list as FileList);
-    const out = arr.filter((f: File) => {
+    return arr.filter((f: File) => {
       const name = f.name?.toLowerCase?.() ?? '';
       const type = f.type ?? '';
       return (
@@ -109,57 +98,50 @@ const ImageUpload: React.FC = () => {
         (type === '' && name.endsWith('.dcm'))
       );
     });
-    console.log('[UP] pickDicoms →', out.length, 'de', arr.length);
-    return out;
   }
-const filesRef = useRef<File[]>([]);
-useEffect(() => { filesRef.current = files; }, [files]);
-  // ======== Generación de previews + guardado en store (con logs fuertes)
-  async function ingestFiles(newFiles: File[]) {
-    console.log('[UP] ingestFiles newFiles:', newFiles.length);
 
-    // dedupe por name+size+mtime
+  const filesRef = useRef<File[]>([]);
+  useEffect(() => {
+    filesRef.current = files;
+  }, [files]);
+
+  // ======== Generación de previews + guardado en store
+  async function ingestFiles(newFiles: File[]) {
     const keyOf = (f: File) => `${f.name}::${f.size}::${f.lastModified}`;
     const existingKeys = new Set(filesRef.current.map(keyOf));
-const newOnes = newFiles.filter(f => !existingKeys.has(keyOf(f)));
-console.log('[UP] dedupe fuera del setState → newOnes:', newOnes.length);
+    const newOnes = newFiles.filter((f) => !existingKeys.has(keyOf(f)));
 
-    
-   setFiles([...filesRef.current, ...newOnes]);
-
-    const before = useDicomStore.getState().previews ?? [];
-    console.log('[UP] previews antes:', before.length);
+    setFiles([...filesRef.current, ...newOnes]);
 
     const newPreviews: Preview[] = [];
     for (const file of newOnes) {
-      console.log('[UP] cargando DICOM:', file.name, file.size, file.type);
       const imageId = cornerstoneWADOImageLoader.wadouri.fileManager.add(file);
-
       try {
         const image: any = await cornerstone.loadAndCacheImage(imageId);
-        console.log('[UP] cornerstone OK →', file.name, { w: image.width, h: image.height });
-
-        // Render a canvas
         const canvas = document.createElement('canvas');
         canvas.width = image.width;
         canvas.height = image.height;
         const ctx = canvas.getContext('2d');
-        if (!ctx) {
-          console.warn('[UP] sin 2D context para', file.name);
-          continue;
-        }
+        if (!ctx) continue;
 
         const pixelData = image.getPixelData() as Uint16Array | Uint8Array;
         const imageData = ctx.createImageData(image.width, image.height);
 
         const slope = image.slope ?? 1;
         const intercept = image.intercept ?? 0;
-        const wc = Array.isArray(image.windowCenter) ? image.windowCenter[0] : image.windowCenter ?? 128;
-        const ww = Array.isArray(image.windowWidth) ? image.windowWidth[0] : image.windowWidth ?? 256;
+        const wc = Array.isArray(image.windowCenter)
+          ? image.windowCenter[0]
+          : image.windowCenter ?? 128;
+        const ww = Array.isArray(image.windowWidth)
+          ? image.windowWidth[0]
+          : image.windowWidth ?? 256;
 
         for (let i = 0; i < pixelData.length; i++) {
           const modality = Number(pixelData[i]) * slope + intercept;
-          const grayscale = Math.min(255, Math.max(0, ((modality - (wc - 0.5)) / (ww - 1) + 0.5) * 255));
+          const grayscale = Math.min(
+            255,
+            Math.max(0, ((modality - (wc - 0.5)) / (ww - 1) + 0.5) * 255)
+          );
           imageData.data[i * 4 + 0] = grayscale;
           imageData.data[i * 4 + 1] = grayscale;
           imageData.data[i * 4 + 2] = grayscale;
@@ -168,40 +150,27 @@ console.log('[UP] dedupe fuera del setState → newOnes:', newOnes.length);
         ctx.putImageData(imageData, 0, 0);
 
         const url = canvas.toDataURL('image/png');
-        console.log('[UP] preview creada:', file.name, 'len:', url.length, 'head:', url.slice(0, 30));
         newPreviews.push({ name: file.name, url });
-      } catch (err) {
-        console.error('[UP] Error cargando DICOM:', file.name, err);
+      } catch {
+        // ignorar errores individuales
       }
     }
 
     const curr = (useDicomStore.getState().previews as Preview[] | undefined) ?? [];
     const next = [...curr, ...newPreviews];
-
-    console.log('[UP] setPreviews → add:', newPreviews.length, 'total:', next.length);
-    console.log('[UP] ejemplo next[0]:', next[0] ? { name: next[0].name, url: next[0].url.slice(0, 40) } : null);
-
     setPreviews(next);
-
-    // verificar que quedó almacenado
-    setTimeout(() => {
-      const check = useDicomStore.getState().previews as Preview[] | undefined;
-      console.log('[UP] store luego de setPreviews:', check?.length, 'ej:', check?.[0]);
-    }, 0);
   }
 
   // ======== Inputs
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    console.log('[UP] onChange files:', e.target.files?.length);
     const picked: File[] = pickDicoms(e.target.files);
+    e.currentTarget.value = ''; // reset del input antes del await
     if (!picked.length) {
       setErrores({ files: 'Elegí archivos .dcm' });
     } else {
       setErrores((prev) => ({ ...prev, files: undefined }));
       await ingestFiles(picked);
     }
-    // reset del input
-    e.currentTarget.value = '';
   };
 
   // ======== Drag & Drop
@@ -227,8 +196,6 @@ console.log('[UP] dedupe fuera del setState → newOnes:', newOnes.length);
     dragDepthRef.current = 0;
     setIsDragging(false);
 
-    console.log('[UP] drop items:', e.dataTransfer.items?.length, 'files:', e.dataTransfer.files?.length);
-
     const fromItems: File[] = [];
     if (e.dataTransfer.items && e.dataTransfer.items.length) {
       for (const it of Array.from(e.dataTransfer.items)) {
@@ -242,8 +209,6 @@ console.log('[UP] dedupe fuera del setState → newOnes:', newOnes.length);
     const all: File[] = fromItems.length ? fromItems : fallback;
 
     const dicoms: File[] = pickDicoms(all);
-    console.log('[UP] drop dicoms →', dicoms.length);
-
     if (!dicoms.length) {
       setErrores({ files: 'Arrastrá únicamente archivos .dcm' });
       return;
@@ -276,7 +241,6 @@ console.log('[UP] dedupe fuera del setState → newOnes:', newOnes.length);
       const formData = new FormData();
       files.forEach((file) => formData.append('files', file));
 
-      console.log('[UP] POST /upload-imgs-in-background con', files.length, 'archivos');
       const data = await apiFetch<{ task_id: string }>(
         `/upload-imgs-in-background/?proyecto_id=${PROYECTO_ID_POST}`,
         { method: 'POST', body: formData }
@@ -289,18 +253,11 @@ console.log('[UP] dedupe fuera del setState → newOnes:', newOnes.length);
           proyecto: proyectoNombre,
           fecha: new Date().toISOString(),
         });
-
-        // LOG CLAVE: el store antes de navegar
-        const st = useDicomStore.getState();
-        console.log('[UP] PRE-NAV previews:', st.previews?.length, 'ej:', st.previews?.[0]);
-        console.log('[UP] PRE-NAV formInfo:', st.formInfo, 'taskId:', st.taskId);
-
         navigate('/analyzeImages');
       } else {
         setErrores({ files: 'Error: no se recibió task_id del backend.' });
       }
     } catch (error: any) {
-      console.error('❌ Error al subir imágenes:', error);
       if (error?.message === 'UNAUTHORIZED') {
         setErrores({ files: 'Sesión expirada. Iniciá sesión de nuevo.' });
         navigate('/');
@@ -316,12 +273,10 @@ console.log('[UP] dedupe fuera del setState → newOnes:', newOnes.length);
   const handleRemoveFile = (index: number) => {
     setFiles((prev) => prev.filter((_, i) => i !== index));
     const nextPreviews: Preview[] = (previews ?? []).filter((_, i) => i !== index);
-    console.log('[UP] remove file idx:', index, 'previews ->', nextPreviews.length);
     setPreviews(nextPreviews);
   };
 
   const handleClearAll = () => {
-    console.log('[UP] clear all');
     setFiles([]);
     setPreviews([]);
     if (inputRef.current) inputRef.current.value = '';
@@ -440,11 +395,13 @@ console.log('[UP] dedupe fuera del setState → newOnes:', newOnes.length);
                 disabled={!empresaSel}
               >
                 <option value="">Nombre del proyecto</option>
-                {(empresaSel ? PROYECTOS_FAKE[empresaSel as keyof typeof PROYECTOS_FAKE] : []).map((p) => (
-                  <option key={p} value={p}>
-                    {p}
-                  </option>
-                ))}
+                {(empresaSel ? PROYECTOS_FAKE[empresaSel as keyof typeof PROYECTOS_FAKE] : []).map(
+                  (p) => (
+                    <option key={p} value={p}>
+                      {p}
+                    </option>
+                  )
+                )}
               </select>
             </>
           ) : (

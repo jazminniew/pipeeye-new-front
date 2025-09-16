@@ -188,10 +188,6 @@ const AnalyzeImages: React.FC = () => {
                     <td>Proyecto</td>
                     <td>{formInfo?.proyecto || '---'}</td>
                   </tr>
-                  <tr>
-                    <td>Fecha</td>
-                    <td>{formInfo?.fecha || '---'}</td>
-                  </tr>
                 </tbody>
               </table>
             </div>
