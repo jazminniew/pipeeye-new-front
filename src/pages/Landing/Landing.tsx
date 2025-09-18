@@ -273,9 +273,10 @@ export default function Landing() {
 
           {/* SOBRE */}
           <section id="sobre" className={styles.sobre}>
-            <div className={styles.container}>
+            <div className={styles.containerSobre}>
+              <div className={styles.txtcontainerSobre}>
               <h2 className={styles.h2}>¿Como funciona el proyecto?</h2>
-              <p className={styles.body}>
+              <p className={styles.sobreInfo}>
                 PipeEye aplica inteligencia artificial para el análisis
                 automatizado de radiografías DICOM de oleoductos. Las imágenes
                 se someten a un preprocesamiento avanzado y luego son evaluadas
@@ -283,27 +284,32 @@ export default function Landing() {
                 conforme a la norma API 1104 y clasifica cada hallazgo.
                 Posteriormente, el técnico puede validar o corregir las
                 detecciones, y el sistema genera reportes automáticos
-                segmentados por rol. En la comparación a continuación, los
+                segmentados por rol. </p>
+                <p>
+                En la comparación a continuación, los
                 círculos amarillos corresponden a las marcas realizadas por
                 nuestro equipo para entrenar la IA, mientras que los azules
                 representan las detecciones automáticas del modelo, evidenciando
                 su nivel de precisión.
               </p>
+              <h3>¡Pruebalo Ahora! →</h3>
+              </div>
 
               <div className={styles.predictsContainer}>
                 <div className={styles.predicts}>
-                  <Compare
-                    firstImage="/img/predicts.png"
-                    secondImage="/img/iaResults.png"
-                    slideMode="hover"
-                    className="w-[1200px] h-[500px] rounded-2xl"
-                  />
+                 <Compare
+  firstImage="/img/predicts.png"
+  secondImage="/img/iaResults.png"
+  slideMode="hover"
+  className="w-[500px] h-[500px] rounded-2xl shadow-[0_0_60px_10px_var(--color-primario)]"
+/>
+
                 </div>
               </div>
             </div>
           </section>
 
-          <ContactUsForm endpoint="http://localhost:8000/contacto" />
+          <ContactUsForm />
         </main>
 
         {/* FOOTER */}

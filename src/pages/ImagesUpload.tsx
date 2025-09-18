@@ -36,7 +36,7 @@ const PROYECTOS_FAKE: Record<(typeof EMPRESAS_FAKE)[number], string[]> = {
 };
 const PROYECTO_ID_POST = 2;
 
-type Preview = { name: string; url: string };
+type Preview = { name: string; url: string; file?: File };
 type Errores = { files?: string; empresa?: string; proyecto?: string };
 
 const ImageUpload: React.FC = () => {
@@ -150,7 +150,8 @@ const ImageUpload: React.FC = () => {
         ctx.putImageData(imageData, 0, 0);
 
         const url = canvas.toDataURL('image/png');
-        newPreviews.push({ name: file.name, url });
+        newPreviews.push({ name: file.name, url, file }); // agrega el File
+
       } catch {
         // ignorar errores individuales
       }

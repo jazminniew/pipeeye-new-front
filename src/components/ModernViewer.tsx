@@ -2,20 +2,29 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 
 type Props = {
-  src?: string;
+  src?: string;                     // dataURL/URL de la preview (jpg/png)
   className?: string;
-  rotate?: number;
-  children?: React.ReactNode;
+  rotate?: number;                  // rotación inicial (deg)
+  children?: React.ReactNode;       // overlays externos (marcadores/etc)
 
   // Descarga DICOM (prioridad en este orden)
-  dicomBlob?: Blob | File;                  // ya lo tenés en memoria
-  dicomUrl?: string;                        // URL directa al .dcm
-  onRequestDicom?: () => Promise<Blob>;     // fetch “on-demand” (API/DB)
-  downloadFileName?: string;                // ej: "estudio_123.dcm"
+  dicomBlob?: Blob | File;          // ya en memoria
+  dicomUrl?: string;                // URL directa a .dcm en tu API
+  onRequestDicom?: () => Promise<Blob>; // fetch “on-demand” a tu API/DB que retorne Blob DICOM
+  downloadFileName?: string;        // ej: "estudio_123.dcm"
 };
 
 type Size = { w: number; h: number };
 const clamp = (v: number, min: number, max: number) => Math.min(max, Math.max(min, v));
+
+/** Valida firma DICOM: 128 bytes de preámbulo + "DICM" */
+async function validateDicomBlob(blob: Blob): Promise<boolean> {
+  if (blob.size < 132) return false;
+  const slice = blob.slice(128, 132);
+  const buf = await slice.arrayBuffer();
+  const sig = new TextDecoder().decode(new Uint8Array(buf));
+  return sig === "DICM";
+}
 
 const ModernViewer: React.FC<Props> = ({
   src,
@@ -30,8 +39,9 @@ const ModernViewer: React.FC<Props> = ({
   const wrapRef = useRef<HTMLDivElement>(null);
   const imgRef  = useRef<HTMLImageElement>(null);
 
+  // Viewport
   const [offset, setOffset] = useState({ x: 0, y: 0 });
-  const [scale, setScale]   = useState(1);
+  const [scale, setScale]   = useState(1);     // relativo a “fit”
   const [rot, setRot]       = useState(rotate);
   const [flipH, setFlipH]   = useState(false);
   const [flipV, setFlipV]   = useState(false);
@@ -39,10 +49,11 @@ const ModernViewer: React.FC<Props> = ({
   const [isFs, setIsFs]     = useState(false);
   const [downloading, setDownloading] = useState(false);
 
+  // Dimensiones
   const [container, setContainer] = useState<Size>({ w: 0, h: 0 });
   const [natural, setNatural]     = useState<Size>({ w: 0, h: 0 });
 
-  // Resize
+  // ResizeObserver
   useEffect(() => {
     const el = wrapRef.current;
     if (!el) return;
@@ -56,7 +67,7 @@ const ModernViewer: React.FC<Props> = ({
     return () => ro.disconnect();
   }, []);
 
-  // Naturales
+  // Carga tamaño natural
   const onImgLoad = () => {
     const img = imgRef.current;
     if (!img) return;
@@ -65,7 +76,7 @@ const ModernViewer: React.FC<Props> = ({
 
   const rot90 = Math.abs(((rot % 360) + 360) % 360) % 180 === 90;
 
-  // Fit base
+  // Escala base “fit”
   const baseFitScale = useMemo(() => {
     if (!natural.w || !natural.h || !container.w || !container.h) return 1;
     const w0 = rot90 ? natural.h : natural.w;
@@ -77,12 +88,14 @@ const ModernViewer: React.FC<Props> = ({
 
   const totalScale = baseFitScale * scale;
 
+  // Tamaño mostrado
   const displayed = useMemo<Size>(() => {
     const w0 = rot90 ? natural.h : natural.w;
     const h0 = rot90 ? natural.w : natural.h;
     return { w: Math.abs(w0 * totalScale), h: Math.abs(h0 * totalScale) };
   }, [natural, rot90, totalScale]);
 
+  // Clamp pan
   const clampOffset = (x: number, y: number) => {
     const maxX = Math.max(0, (displayed.w - container.w) / 2);
     const maxY = Math.max(0, (displayed.h - container.h) / 2);
@@ -105,7 +118,7 @@ const ModernViewer: React.FC<Props> = ({
     setInvert(false);
   };
 
-  // Drag
+  // Drag pan
   const dragRef = useRef<{ x: number; y: number } | null>(null);
   useEffect(() => {
     const el = wrapRef.current;
@@ -137,7 +150,7 @@ const ModernViewer: React.FC<Props> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [displayed, container]);
 
-  // Zoom
+  // Zoom (rueda) hasta 20×
   const MIN_Z = 0.1, MAX_Z = 20;
   useEffect(() => {
     const el = wrapRef.current;
@@ -146,17 +159,21 @@ const ModernViewer: React.FC<Props> = ({
     const onWheel = (e: WheelEvent) => {
       e.preventDefault();
       if (!container.w || !container.h) return;
+
       const step = 0.10;
       const dir = e.deltaY > 0 ? -1 : 1;
       const factor = 1 + step * dir;
 
       setScale((prev) => {
         const nextScale = clamp(prev * factor, MIN_Z, MAX_Z);
+
+        // mantener punto bajo cursor
         const rect = el.getBoundingClientRect();
         const cx = rect.left + rect.width / 2;
         const cy = rect.top + rect.height / 2;
         const dx = e.clientX - (cx + offset.x);
         const dy = e.clientY - (cy + offset.y);
+
         const g = nextScale / prev;
         setOffset(clampOffset(offset.x + (1 - g) * dx, offset.y + (1 - g) * dy));
         return nextScale;
@@ -168,7 +185,7 @@ const ModernViewer: React.FC<Props> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [offset, container, displayed]);
 
-  // Doble click = acercar rápido
+  // Doble click = acercar
   useEffect(() => {
     const el = wrapRef.current;
     if (!el) return;
@@ -193,36 +210,7 @@ const ModernViewer: React.FC<Props> = ({
     else await document.exitFullscreen();
   };
 
-  // Descarga DICOM
-  const canDownloadDicom = Boolean(dicomBlob || dicomUrl || onRequestDicom);
-  const downloadDicom = async () => {
-    try {
-      setDownloading(true);
-      // 1) Blob directo
-      if (dicomBlob) {
-        const url = URL.createObjectURL(dicomBlob);
-        triggerDownload(url, ensureDcm(downloadFileName));
-        setTimeout(() => URL.revokeObjectURL(url), 2000);
-        return;
-      }
-      // 2) URL directa
-      if (dicomUrl) {
-        triggerDownload(dicomUrl, ensureDcm(downloadFileName));
-        return;
-      }
-      // 3) Pedido on-demand (API/DB)
-      if (onRequestDicom) {
-        const blob = await onRequestDicom(); // devolvé un Blob de tipo application/dicom
-        const url = URL.createObjectURL(blob);
-        triggerDownload(url, ensureDcm(downloadFileName));
-        setTimeout(() => URL.revokeObjectURL(url), 2000);
-        return;
-      }
-    } finally {
-      setDownloading(false);
-    }
-  };
-
+  // Descarga DICOM segura (valida .dcm)
   const ensureDcm = (name: string) => (name?.toLowerCase().endsWith(".dcm") ? name : `${name || "imagen"}.dcm`);
   const triggerDownload = (url: string, name: string) => {
     const a = document.createElement("a");
@@ -230,10 +218,60 @@ const ModernViewer: React.FC<Props> = ({
     document.body.appendChild(a); a.click(); a.remove();
   };
 
-  // Transform
+  const canDownloadDicom = Boolean(dicomBlob || dicomUrl || onRequestDicom);
+  const downloadDicom = async () => {
+    try {
+      setDownloading(true);
+
+      // 1) Blob directo
+      if (dicomBlob) {
+        const ok = await validateDicomBlob(dicomBlob);
+        if (!ok) { alert("El blob recibido no parece un DICOM válido."); return; }
+        const url = URL.createObjectURL(dicomBlob);
+        triggerDownload(url, ensureDcm(downloadFileName));
+        setTimeout(() => URL.revokeObjectURL(url), 1500);
+        return;
+      }
+
+      // 2) Fetch por URL
+      if (dicomUrl) {
+        const r = await fetch(dicomUrl, { headers: { /* Authorization si aplica */ } });
+        if (!r.ok) { alert(`No se pudo descargar DICOM (${r.status}).`); return; }
+        const blob = await r.blob();
+        const ok = await validateDicomBlob(blob);
+        if (!ok) {
+          const ct = r.headers.get("content-type") || "";
+          const txt = (ct.includes("json") || ct.includes("html")) ? (await r.clone().text()).slice(0, 200) : "";
+          console.error("Respuesta no DICOM:", { ct, sample: txt });
+          alert("La respuesta no parece un DICOM válido (¿endpoint/ID incorrecto?).");
+          return;
+        }
+        const url = URL.createObjectURL(blob);
+        triggerDownload(url, ensureDcm(downloadFileName));
+        setTimeout(() => URL.revokeObjectURL(url), 1500);
+        return;
+      }
+
+      // 3) Fetch on-demand
+      if (onRequestDicom) {
+        const blob = await onRequestDicom(); // debería venir con application/dicom
+        const ok = await validateDicomBlob(blob);
+        if (!ok) { alert("El archivo obtenido no es un DICOM válido."); return; }
+        const url = URL.createObjectURL(blob);
+        triggerDownload(url, ensureDcm(downloadFileName));
+        setTimeout(() => URL.revokeObjectURL(url), 1500);
+        return;
+      }
+    } finally {
+      setDownloading(false);
+    }
+  };
+
+  // Transform compuesto
   const scaleX = totalScale * (flipH ? -1 : 1);
   const scaleY = totalScale * (flipV ? -1 : 1);
 
+  
   return (
     <div
       ref={wrapRef}
@@ -248,6 +286,7 @@ const ModernViewer: React.FC<Props> = ({
       }}
       onDragStart={(e) => e.preventDefault()}
     >
+      {/* Imagen */}
       {src && (
         <img
           ref={imgRef}
@@ -269,7 +308,7 @@ const ModernViewer: React.FC<Props> = ({
         />
       )}
 
-      {/* Overlay externo (marcadores) */}
+      {/* Overlay externo */}
       <div style={{ position: "absolute", inset: 0, pointerEvents: "none" }}>
         {children}
       </div>
@@ -299,17 +338,20 @@ const ModernViewer: React.FC<Props> = ({
         <Btn title="Flip Vertical" onClick={() => setFlipV((v) => !v)}>⇵</Btn>
         <Btn title="Invertir" onClick={() => setInvert((v) => !v)}>⊝</Btn>
         <Sep />
-        {/* Descarga con ícono (si no hay DICOM disponible, deshabilitado) */}
+        {/* Reset para limpiar warning TS y utilidad real */}
+        <Btn title="Reset" onClick={resetAll}>Reset</Btn>
+        <Sep />
+        {/* Descarga DICOM con ícono; deshabilitado si no hay fuente */}
         <IconBtn
-          title={canDownloadDicom ? "Descargar DICOM" : "DICOM no disponible"}
+          title={canDownloadDicom ? (downloading ? "Descargando..." : "Descargar DICOM") : "DICOM no disponible"}
           onClick={canDownloadDicom ? downloadDicom : undefined}
           disabled={!canDownloadDicom || downloading}
           ariaLabel="Descargar DICOM"
-          svgPath="M12 3v10m0 0l-4-4m4 4l4-4M4 17h16"  // flecha hacia abajo a una base
+          svgPath="M12 3v10m0 0l-4-4m4 4l4-4M4 17h16"  // flecha a base
         />
       </div>
 
-      {/* HUD (sin FIT) */}
+      {/* HUD simple (sin mostrar Fit) */}
       <div
         style={{
           position: "absolute",
@@ -330,13 +372,13 @@ const ModernViewer: React.FC<Props> = ({
         {isFs && <div>FS: ON</div>}
       </div>
 
-      {/* Pantalla completa: esquina inferior derecha */}
+      {/* Pantalla completa — esquina inferior derecha */}
       <div style={{ position: "absolute", right: 8, bottom: 8, pointerEvents: "auto" }}>
         <IconBtn
           title={isFs ? "Salir pantalla completa (F)" : "Pantalla completa (F)"}
           onClick={toggleFullscreen}
           ariaLabel="Pantalla completa"
-          svgPath="M4 8V4h4M20 8V4h-4M4 16v4h4M20 16v4h-4"  // esquinas expand
+          svgPath="M4 8V4h4M20 8V4h-4M4 16v4h4M20 16v4h-4" // esquinas expand
         />
       </div>
     </div>

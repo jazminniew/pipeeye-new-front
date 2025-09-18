@@ -150,9 +150,9 @@ export function LoginForm({
               <div className="mt-2 text-center text-sm text-white/80">
                 ¿No tienes una cuenta?{" "}
                 <a
-                  href="#"
-                  className="text-[#66b2ff] hover:text-[#8cc7ff] underline underline-offset-4"
-                >
+                    onClick={() => navigate("/contacto")}
+                    className="cursor-pointer text-[#66b2ff] hover:text-[#8cc7ff] underline underline-offset-4"
+                  >
                   Solicitá acceso
                 </a>
               </div>

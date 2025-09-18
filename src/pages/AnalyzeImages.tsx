@@ -1,12 +1,11 @@
-import React, { useEffect, useState } from 'react';
+// src/pages/AnalyzeImages.tsx
+import React, { useEffect, useMemo, useState } from 'react';
 import { useDicomStore } from '../store/dicomStore';
 import Navbar from '../components/Navbar';
 import styles from '../styles/AnalyzeImages.module.css';
 import { apiFetch } from '../lib/api';
 import { useNavigate } from 'react-router-dom';
-// arriba de todo con el resto de imports:
-import ModernViewer from "../components/ModernViewer";
-
+import ModernViewer from '../components/ModernViewer';
 
 type Prediccion = {
   x1: number; y1: number; x2: number; y2: number;
@@ -14,9 +13,12 @@ type Prediccion = {
   categoria_nombre: string;
 };
 
+// Si usás Vite, definí tu base del API en .env => VITE_API_BASE_URL
+const API_BASE = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8000';
+
 const AnalyzeImages: React.FC = () => {
-  const previews = useDicomStore((s) => s.previews);
-  const taskId = useDicomStore((s) => s.taskId);
+  const previews = useDicomStore((s) => s.previews);   // [{ url, name, dicomId? }, ...]
+  const taskId   = useDicomStore((s) => s.taskId);
   const formInfo = useDicomStore((s) => s.formInfo);
 
   const [estado, setEstado] = useState<'esperando...' | 'rechazado' | 'en revision' | 'aprobado' | string>('esperando...');
@@ -24,33 +26,27 @@ const AnalyzeImages: React.FC = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const navigate = useNavigate();
 
-  // ⬇️ ESTA FUNCIÓN FALTABA
+  // Botón de estado (como lo tenías)
   const renderEstadoBoton = () => {
     switch (estado) {
-      case 'rechazado':
-        return <button className={styles.rechazado}>❌ Rechazado</button>;
-      case 'en revision':
-        return <button className={styles.revision}>⚠️ En revisión</button>;
-      case 'aprobado':
-        return <button className={styles.aprobado}>✅ Aprobado</button>;
-      default:
-        return null;
+      case 'rechazado':  return <button className={styles.rechazado}>❌ Rechazado</button>;
+      case 'en revision':return <button className={styles.revision}>⚠️ En revisión</button>;
+      case 'aprobado':   return <button className={styles.aprobado}>✅ Aprobado</button>;
+      default:           return null;
     }
   };
 
+  // Polling resultados
   useEffect(() => {
     if (!taskId) return;
-
     const interval = setInterval(async () => {
       try {
         const data = await apiFetch<any>(`/tasks/${taskId}`);
-
         if (data?.task?.estado) setEstado(data.task.estado);
 
         if (Array.isArray(data?.resultados)) {
-          // espero data.resultados[i].predicciones
           const predPorImagen = data.resultados.map((item: any) =>
-            Array.isArray(item?.predicciones) ? item.predicciones as Prediccion[] : []
+            Array.isArray(item?.predicciones) ? (item.predicciones as Prediccion[]) : []
           );
           setResultados(predPorImagen);
         }
@@ -65,20 +61,50 @@ const AnalyzeImages: React.FC = () => {
         }
       }
     }, 6000);
-
     return () => clearInterval(interval);
   }, [taskId, navigate]);
 
   const handleNext = () => {
     if (currentIndex < previews.length - 1) setCurrentIndex((i) => i + 1);
   };
-
   const handlePrev = () => {
     if (currentIndex > 0) setCurrentIndex((i) => i - 1);
   };
 
   const currentImage = previews[currentIndex];
   const currentResultados = resultados[currentIndex] || [];
+
+  // ========= DESCARGA DICOM: ELEGÍ UNA DE ESTAS DOS OPCIONES =========
+
+  // Opción A) URL directa servida por tu backend (recomendado si ya la tenés)
+  // Ejemplos de endpoints que suelen ser cómodos:
+  //   GET /dicoms/{taskId}/{index} -> devuelve el .dcm
+  //   GET /dicoms/{dicomId}        -> devuelve el .dcm
+  // Armamos una URL si tenés dicomId o si tu API usa taskId+index:
+  const dicomUrl: string | undefined = useMemo(() => {
+    if (!taskId || !currentImage) return undefined;
+    // 1) Si tu preview trae un identificador DICOM específico:
+    // if (currentImage.dicomId) return `${API_BASE}/dicoms/${currentImage.dicomId}`;
+    // 2) Si tu backend expone por índice dentro del task:
+    return `${API_BASE}/dicoms/${encodeURIComponent(taskId)}/${currentIndex}`;
+  }, [taskId, currentImage, currentIndex]);
+
+  // Opción B) Fetch on-demand (no necesitás construir la URL exacta ni filename)
+  // El ModernViewer valida firma DICM y dispara la descarga con .dcm
+  const onRequestDicom = currentImage ? async (): Promise<Blob> => {
+    const r = await fetch(`${API_BASE}/dicoms/${encodeURIComponent(taskId || '')}/${currentIndex}`, {
+      // headers: { Authorization: `Bearer ${localStorage.getItem('token') ?? ''}` }
+    });
+    if (!r.ok) throw new Error(`No se pudo obtener DICOM (${r.status})`);
+    const blob = await r.blob();
+    return blob; // ModernViewer valida "DICM" y dispara la descarga
+  } : undefined;
+
+  // Nombre del archivo a descargar (si querés algo prolijo)
+  const downloadFileName = useMemo(() => {
+    const base = (currentImage?.name || `estudio_${currentIndex}`).replace(/\s+/g, '_').replace(/[^\w.-]/g, '');
+    return `${base}.dcm`;
+  }, [currentImage, currentIndex]);
 
   return (
     <div className={styles.body}>
@@ -91,40 +117,45 @@ const AnalyzeImages: React.FC = () => {
               <span className={styles.estadoAnalisis}>{estado}</span>
             </div>
 
-           <div className={styles.imageViewer}>
-  <ModernViewer src={currentImage?.url} className={styles.imageViewer} rotate={-90}>
-    {/* Tus marcadores, igual que antes, se renderizan como children */}
-    {currentResultados.map((r, i) => {
-      const x3 = r.x1 + (r.x2 - r.x1) / 2;
-      const y3 = r.y1 + (r.y2 - r.y1) / 2;
-      return (
-        <div
-          key={i}
-          className={styles.marker}
-          style={{
-            left: x3 * 0.3, // mantenemos tu lógica actual
-            top:  y3 * 0.3,
-            position: "absolute",
-          }}
-        >
-          {r.categoria_nombre}
-        </div>
-      );
-    })}
-  </ModernViewer>
-</div>
-
+            <div className={styles.imageViewer}>
+              <ModernViewer
+                src={currentImage?.url}
+                className={styles.imageViewer}
+                rotate={-90}
+                dicomBlob={currentImage?.file}   
+                // === Activa botón "Descargar DICOM" ===
+                // Elegí UNA: dicomUrl (A) o onRequestDicom (B). Podés pasar ambas: prioriza blob/url y luego onRequest.
+                dicomUrl={dicomUrl}
+                onRequestDicom={onRequestDicom}
+                downloadFileName={downloadFileName}
+              >
+                {/* Marcadores: seguimos tu lógica actual (coordenadas “aprox.” sobre el overlay) */}
+                {currentResultados.map((r, i) => {
+                  const x3 = r.x1 + (r.x2 - r.x1) / 2;
+                  const y3 = r.y1 + (r.y2 - r.y1) / 2;
+                  return (
+                    <div
+                      key={i}
+                      className={styles.marker}
+                      style={{
+                        left: x3 * 0.3,  // tu escala actual
+                        top:  y3 * 0.3,
+                        position: "absolute",
+                      }}
+                    >
+                      {r.categoria_nombre}
+                    </div>
+                  );
+                })}
+              </ModernViewer>
+            </div>
 
             <div className={styles.statusRow}>{renderEstadoBoton()}</div>
           </div>
 
           <div className={styles.navigationButtons}>
-            <button onClick={handlePrev} disabled={currentIndex === 0}>
-              ← Anterior
-            </button>
-            <button onClick={handleNext} disabled={currentIndex === previews.length - 1}>
-              Siguiente →
-            </button>
+            <button onClick={handlePrev} disabled={currentIndex === 0}>← Anterior</button>
+            <button onClick={handleNext} disabled={currentIndex === previews.length - 1}>Siguiente →</button>
           </div>
 
           <div className={styles.infoGrid}>
@@ -192,6 +223,7 @@ const AnalyzeImages: React.FC = () => {
               </table>
             </div>
           </div>
+
         </div>
       </div>
     </div>

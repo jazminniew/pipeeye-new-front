@@ -8,6 +8,7 @@ import History from './pages/History'
 import Landing from './pages/Landing/Landing.tsx'
 import Administrar from '@/pages/Administrar';
 import '@/services'; 
+import ContactPage from './pages/ContactPage.tsx'
 
 export default function App() {
   return (
@@ -18,6 +19,7 @@ export default function App() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/upload" element={<ImageUpload />} />
         <Route path="/analyzeImages" element={<AnalyzeImages />} />
+        <Route path="/contacto" element={<ContactPage />} />
         <Route path="/history" element={<History />} /> 
         <Route path="/administrar" element={<Administrar />} />
       </Routes>

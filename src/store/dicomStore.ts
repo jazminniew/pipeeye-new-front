@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 
-type Preview = { name: string; url: string };
+type Preview = { name: string; url: string; file?: File };
+
 
 interface DicomStore {
   previews: Preview[];

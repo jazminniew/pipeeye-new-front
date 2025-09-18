@@ -1,5 +1,5 @@
 .section {
-  background: linear-gradient(180deg, rgba(11,18,32,0) 0%, rgba(11,18,32,0.55) 100%);
+  background: color-mix(in oklab, var(--bg), black 30%);
   padding: clamp(28px, 5vw, 56px) 0;
   color: var(--text);
 }
@@ -86,6 +86,7 @@
   font-size: var(--fs-15);
   line-height: var(--lh-16);
   outline: none;
+  background-color: rgba(255, 255, 255, 0.038);
   transition: border-color .18s ease, box-shadow .18s ease, background .18s ease, transform .04s ease;
 }
 
@@ -103,7 +104,7 @@
 .field input:hover,
 .field textarea:hover {
   border-color: rgba(255,255,255,0.14);
-  background: #0b1527;
+   background-color: rgba(255, 255, 255, 0.083);
 }
 
 .field input:active,
