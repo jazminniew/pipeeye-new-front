@@ -9,6 +9,8 @@ import Landing from './pages/Landing/Landing.tsx'
 import Administrar from '@/pages/Administrar';
 import '@/services'; 
 import ContactPage from './pages/ContactPage.tsx'
+import Proyectos from './pages/Proyectos.tsx' 
+import Radiografias from './pages/Radiografias.tsx' 
 
 export default function App() {
   return (
@@ -22,6 +24,9 @@ export default function App() {
         <Route path="/contacto" element={<ContactPage />} />
         <Route path="/history" element={<History />} /> 
         <Route path="/administrar" element={<Administrar />} />
+        <Route path="/proyectos" element={<Proyectos />} />
+        <Route path="/proyectos/:empresa" element={<Proyectos />} />
+        <Route path="/radiografias/:proyectoId" element={<Radiografias />} />
       </Routes>
     </BrowserRouter>
   )

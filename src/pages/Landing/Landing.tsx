@@ -301,7 +301,8 @@ export default function Landing() {
   firstImage="/img/predicts.png"
   secondImage="/img/iaResults.png"
   slideMode="hover"
-  className="w-[500px] h-[500px] rounded-2xl shadow-[0_0_60px_10px_var(--color-primario)]"
+  className="w-[500px] h-[500px] rounded-2xl "
+  // shadow-[0_0_60px_10px_var(--color-primario)]
 />
 
                 </div>

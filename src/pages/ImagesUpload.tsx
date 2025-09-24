@@ -1,41 +1,35 @@
-// src/pages/ImageUpload.tsx
-import React, { useEffect, useState, useRef } from 'react';
-import { X, Building2, FileText } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+// ==============================
+// File: src/pages/ImageUpload.tsx (reemplaza TODO el archivo por esto)
+// ==============================
+import React, { useEffect, useState, useRef, useMemo } from "react";
+import { X, Building2, FileText } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
-import * as cornerstone from 'cornerstone-core';
-import * as cornerstoneWADOImageLoader from 'cornerstone-wado-image-loader';
-import * as dicomParser from 'dicom-parser';
+import * as cornerstone from "cornerstone-core";
+import * as cornerstoneWADOImageLoader from "cornerstone-wado-image-loader";
+import * as dicomParser from "dicom-parser";
 
-import { useDicomStore } from '../store/dicomStore';
-import Header from '../components/Navbar';
-import styles from '../styles/ImageUpload.module.css';
-import { apiFetch } from '../lib/api';
-import ProyectoSelector, { type ModoProyecto } from '../components/RadioBtn';
-import '../styles/Globals.css';
+import { useDicomStore } from "../store/dicomStore";
+import Header from "../components/Navbar";
+import styles from "../styles/ImageUpload.module.css";
+import { apiFetch } from "../lib/api";
+import ProyectoSelector, { type ModoProyecto } from "../components/RadioBtn";
+import { getProyectos, getProyectosDeEmpresa, createProyecto, type Proyecto } from "../services/api";
+import "../styles/Globals.css";
 
 // ===== Cornerstone wiring
 cornerstoneWADOImageLoader.external.cornerstone = cornerstone;
 cornerstoneWADOImageLoader.external.dicomParser = dicomParser;
 cornerstoneWADOImageLoader.webWorkerManager.initialize({
-  webWorkerPath: '/cornerstone/cornerstoneWADOImageLoaderWebWorker.js',
+  webWorkerPath: "/cornerstone/cornerstoneWADOImageLoaderWebWorker.js",
   taskConfiguration: {
     decodeTask: {
-      codecsPath: '/cornerstone/cornerstoneWADOImageLoaderCodecs.js',
+      codecsPath: "/cornerstone/cornerstoneWADOImageLoaderCodecs.js",
     },
   },
 });
 
-// ====== FAKE DATA (UI)
-const EMPRESAS_FAKE = ['ENOD', 'Empresa2', 'Empresa3', 'Empresa4'] as const;
-const PROYECTOS_FAKE: Record<(typeof EMPRESAS_FAKE)[number], string[]> = {
-  ENOD: ['Oleoducto Sur', 'Inspección Q3', 'Reparación 12B'],
-  Empresa2: ['Batería La Plata', 'Yacimiento X-17'],
-  Empresa3: ['Gasoducto Norte', 'Relevamiento Anual'],
-  Empresa4: ['Planta Dock Sud', 'Parada de Planta'],
-};
-const PROYECTO_ID_POST = 2;
-
+// ===== Tipos locales
 type Preview = { name: string; url: string; file?: File };
 type Errores = { files?: string; empresa?: string; proyecto?: string };
 
@@ -50,11 +44,17 @@ const ImageUpload: React.FC = () => {
   const dragDepthRef = useRef(0);
 
   // derecha (selector)
-  const [modo, setModo] = useState<ModoProyecto>('existente');
-  const [empresaSel, setEmpresaSel] = useState<string>('');
-  const [proyectoSel, setProyectoSel] = useState<string>('');
-  const [empresaNueva, setEmpresaNueva] = useState('');
-  const [proyectoNuevo, setProyectoNuevo] = useState('');
+  const [modo, setModo] = useState<ModoProyecto>("existente");
+  const [empresaSel, setEmpresaSel] = useState<string>("");
+  const [proyectoSelId, setProyectoSelId] = useState<string>("");
+  const [empresaNueva, setEmpresaNueva] = useState("");
+  const [proyectoNuevo, setProyectoNuevo] = useState("");
+
+  // datos backend
+  const [empresas, setEmpresas] = useState<string[]>([]);
+  const [proyectosDeEmpresa, setProyectosDeEmpresa] = useState<Proyecto[]>([]);
+  const [loadingEmpresas, setLoadingEmpresas] = useState<boolean>(true);
+  const [loadingProyectos, setLoadingProyectos] = useState<boolean>(false);
 
   const navigate = useNavigate();
 
@@ -67,21 +67,56 @@ const ImageUpload: React.FC = () => {
   const inputRef = useRef<HTMLInputElement>(null);
 
   // util
-  const capitalize = (v: string) => (v ? v[0].toUpperCase() + v.slice(1).toLowerCase() : '');
+  const capitalize = (v: string) => (v ? v[0].toUpperCase() + v.slice(1).toLowerCase() : "");
+
+  // ======== Cargar empresas (igual que History: deduciendo desde /proyectos/)
+  useEffect(() => {
+    (async () => {
+      try {
+        setLoadingEmpresas(true);
+        const ps = await getProyectos();
+        const uniq = Array.from(
+          ps.reduce((acc, p) => acc.add((p.empresa || "").trim()), new Set<string>())
+        ).filter(Boolean).sort((a, b) => a.localeCompare(b));
+        setEmpresas(uniq);
+      } catch (e: any) {
+        if (e?.message === "UNAUTHORIZED") {
+          navigate("/");
+        }
+      } finally {
+        setLoadingEmpresas(false);
+      }
+    })();
+  }, [navigate]);
 
   // reset proyecto cuando cambia empresa
   useEffect(() => {
-    setProyectoSel('');
-  }, [empresaSel]);
+    setProyectoSelId("");
+    if (!empresaSel) {
+      setProyectosDeEmpresa([]);
+      return;
+    }
+    (async () => {
+      try {
+        setLoadingProyectos(true);
+        const list = await getProyectosDeEmpresa(empresaSel);
+        setProyectosDeEmpresa(list);
+      } catch (e: any) {
+        if (e?.message === "UNAUTHORIZED") navigate("/");
+      } finally {
+        setLoadingProyectos(false);
+      }
+    })();
+  }, [empresaSel, navigate]);
 
   // evitar abrir archivos fuera del dropzone
   useEffect(() => {
     const prevent = (e: DragEvent) => e.preventDefault();
-    window.addEventListener('dragover', prevent);
-    window.addEventListener('drop', prevent);
+    window.addEventListener("dragover", prevent);
+    window.addEventListener("drop", prevent);
     return () => {
-      window.removeEventListener('dragover', prevent);
-      window.removeEventListener('drop', prevent);
+      window.removeEventListener("dragover", prevent);
+      window.removeEventListener("drop", prevent);
     };
   }, []);
 
@@ -90,12 +125,12 @@ const ImageUpload: React.FC = () => {
     if (!list) return [];
     const arr: File[] = Array.isArray(list) ? list : Array.from(list as FileList);
     return arr.filter((f: File) => {
-      const name = f.name?.toLowerCase?.() ?? '';
-      const type = f.type ?? '';
+      const name = f.name?.toLowerCase?.() ?? "";
+      const type = f.type ?? "";
       return (
-        name.endsWith('.dcm') ||
-        type === 'application/dicom' ||
-        (type === '' && name.endsWith('.dcm'))
+        name.endsWith(".dcm") ||
+        type === "application/dicom" ||
+        (type === "" && name.endsWith(".dcm"))
       );
     });
   }
@@ -118,10 +153,10 @@ const ImageUpload: React.FC = () => {
       const imageId = cornerstoneWADOImageLoader.wadouri.fileManager.add(file);
       try {
         const image: any = await cornerstone.loadAndCacheImage(imageId);
-        const canvas = document.createElement('canvas');
+        const canvas = document.createElement("canvas");
         canvas.width = image.width;
         canvas.height = image.height;
-        const ctx = canvas.getContext('2d');
+        const ctx = canvas.getContext("2d");
         if (!ctx) continue;
 
         const pixelData = image.getPixelData() as Uint16Array | Uint8Array;
@@ -149,9 +184,8 @@ const ImageUpload: React.FC = () => {
         }
         ctx.putImageData(imageData, 0, 0);
 
-        const url = canvas.toDataURL('image/png');
-        newPreviews.push({ name: file.name, url, file }); // agrega el File
-
+        const url = canvas.toDataURL("image/png");
+        newPreviews.push({ name: file.name, url, file });
       } catch {
         // ignorar errores individuales
       }
@@ -165,9 +199,9 @@ const ImageUpload: React.FC = () => {
   // ======== Inputs
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const picked: File[] = pickDicoms(e.target.files);
-    e.currentTarget.value = ''; // reset del input antes del await
+    e.currentTarget.value = ""; // reset antes del await
     if (!picked.length) {
-      setErrores({ files: 'Elegí archivos .dcm' });
+      setErrores({ files: "Elegí archivos .dcm" });
     } else {
       setErrores((prev) => ({ ...prev, files: undefined }));
       await ingestFiles(picked);
@@ -177,7 +211,7 @@ const ImageUpload: React.FC = () => {
   // ======== Drag & Drop
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
-    e.dataTransfer.dropEffect = 'copy';
+    e.dataTransfer.dropEffect = "copy";
   };
 
   const handleDragEnter = (e: React.DragEvent<HTMLDivElement>) => {
@@ -200,7 +234,7 @@ const ImageUpload: React.FC = () => {
     const fromItems: File[] = [];
     if (e.dataTransfer.items && e.dataTransfer.items.length) {
       for (const it of Array.from(e.dataTransfer.items)) {
-        if (it.kind === 'file') {
+        if (it.kind === "file") {
           const f = it.getAsFile();
           if (f) fromItems.push(f);
         }
@@ -211,59 +245,75 @@ const ImageUpload: React.FC = () => {
 
     const dicoms: File[] = pickDicoms(all);
     if (!dicoms.length) {
-      setErrores({ files: 'Arrastrá únicamente archivos .dcm' });
+      setErrores({ files: "Arrastrá únicamente archivos .dcm" });
       return;
     }
     setErrores((prev) => ({ ...prev, files: undefined }));
     await ingestFiles(dicoms);
   };
 
+  // ======== Helpers de proyecto
+  const empresaValida = useMemo(() => (modo === "existente" ? empresaSel : empresaNueva.trim()), [modo, empresaSel, empresaNueva]);
+  const proyectoNombreValido = useMemo(() => (modo === "existente" ? (proyectosDeEmpresa.find(p => String(p.id) === String(proyectoSelId))?.nombre || "") : proyectoNuevo.trim()), [modo, proyectoSelId, proyectosDeEmpresa, proyectoNuevo]);
+
+  async function ensureProyectoId(): Promise<string | number> {
+    if (modo === "existente") {
+      return proyectoSelId; // viene del select
+    }
+    // crear nuevo
+    const created = await createProyecto({ nombre: proyectoNuevo.trim(), empresa: empresaNueva.trim() });
+    return created.id;
+  }
+
   // ======== Continuar
   const handleUploadAndNext = async () => {
     const nextErrors: Errores = {};
-    if (files.length === 0) nextErrors.files = 'Subí al menos una imagen .dcm';
+    if (files.length === 0) nextErrors.files = "Subí al menos una imagen .dcm";
 
-    if (modo === 'existente') {
-      if (!empresaSel) nextErrors.empresa = 'Seleccioná una empresa';
-      if (!proyectoSel) nextErrors.proyecto = 'Seleccioná un proyecto';
+    if (modo === "existente") {
+      if (!empresaSel) nextErrors.empresa = "Seleccioná una empresa";
+      if (!proyectoSelId) nextErrors.proyecto = "Seleccioná un proyecto";
     } else {
-      if (!empresaNueva.trim()) nextErrors.empresa = 'Ingresá el nombre de la empresa';
-      if (!proyectoNuevo.trim()) nextErrors.proyecto = 'Ingresá el nombre del proyecto';
+      if (!empresaNueva.trim()) nextErrors.empresa = "Ingresá el nombre de la empresa";
+      if (!proyectoNuevo.trim()) nextErrors.proyecto = "Ingresá el nombre del proyecto";
     }
 
     setErrores(nextErrors);
     if (Object.keys(nextErrors).length > 0) return;
 
-    const clienteNombre = modo === 'existente' ? empresaSel : empresaNueva.trim();
-    const proyectoNombre = modo === 'existente' ? proyectoSel : proyectoNuevo.trim();
-
     setSubiendo(true);
     try {
+      const proyectoId = await ensureProyectoId();
+
+      // Persistimos en store para AnalyzeImages
+      setFormInfo({
+        cliente: empresaValida,
+        proyecto: proyectoNombreValido,
+        fecha: new Date().toISOString(),
+      });
+
       const formData = new FormData();
-      files.forEach((file) => formData.append('files', file));
+      files.forEach((file) => formData.append("files", file));
 
       const data = await apiFetch<{ task_id: string }>(
-        `/upload-imgs-in-background/?proyecto_id=${PROYECTO_ID_POST}`,
-        { method: 'POST', body: formData }
+        `/upload-imgs-in-background/?proyecto_id=${encodeURIComponent(String(proyectoId))}`,
+        { method: "POST", body: formData }
       );
 
       if (data?.task_id) {
         setTaskId(String(data.task_id));
-        setFormInfo({
-          cliente: clienteNombre,
-          proyecto: proyectoNombre,
-          fecha: new Date().toISOString(),
-        });
-        navigate('/analyzeImages');
+        navigate("/analyzeImages");
       } else {
-        setErrores({ files: 'Error: no se recibió task_id del backend.' });
+        setErrores({ files: "Error: no se recibió task_id del backend." });
       }
     } catch (error: any) {
-      if (error?.message === 'UNAUTHORIZED') {
-        setErrores({ files: 'Sesión expirada. Iniciá sesión de nuevo.' });
-        navigate('/');
+      if (error?.message === "UNAUTHORIZED") {
+        setErrores({ files: "Sesión expirada. Iniciá sesión de nuevo." });
+        navigate("/");
+      } else if (error?.detail === "Not authenticated") {
+        setErrores({ files: "No autenticado. Iniciá sesión para crear proyectos y subir imágenes." });
       } else {
-        setErrores({ files: 'Error al subir imágenes al backend.' });
+        setErrores({ files: "Error al crear proyecto o subir imágenes." });
       }
     } finally {
       setSubiendo(false);
@@ -280,14 +330,14 @@ const ImageUpload: React.FC = () => {
   const handleClearAll = () => {
     setFiles([]);
     setPreviews([]);
-    if (inputRef.current) inputRef.current.value = '';
+    if (inputRef.current) inputRef.current.value = "";
   };
 
   // ======== IDs (accesibilidad)
-  const idEmpresaExist = 'empresa-existente';
-  const idProyectoExist = 'proyecto-existente';
-  const idEmpresaNueva = 'empresa-nueva';
-  const idProyectoNuevo = 'proyecto-nuevo';
+  const idEmpresaExist = "empresa-existente";
+  const idProyectoExist = "proyecto-existente";
+  const idEmpresaNueva = "empresa-nueva";
+  const idProyectoNuevo = "proyecto-nuevo";
 
   return (
     <div className={`${styles.pageLock} ${styles.body}`}>
@@ -296,14 +346,14 @@ const ImageUpload: React.FC = () => {
         {/* IZQUIERDA */}
         <div className={styles.leftSection}>
           <div
-            className={`${styles.dropZone} ${isDragging ? styles.dropZoneDragging : ''}`}
+            className={`${styles.dropZone} ${isDragging ? styles.dropZoneDragging : ""}`}
             onDragOver={handleDragOver}
             onDragEnter={handleDragEnter}
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
           >
             <p>
-              <strong>{isDragging ? 'Soltá para subir .dcm' : 'Arrastrá tus imágenes DICOM'}</strong>
+              <strong>{isDragging ? "Soltá para subir .dcm" : "Arrastrá tus imágenes DICOM"}</strong>
             </p>
             <p className={styles.secondaryText}>o hacé clic para seleccionar archivos</p>
 
@@ -364,7 +414,7 @@ const ImageUpload: React.FC = () => {
 
           <h2>Completar la siguiente información:</h2>
 
-          {modo === 'existente' ? (
+          {modo === "existente" ? (
             <>
               <div className={styles.fieldLabel}>
                 <Building2 size={20} className={styles.ionIcon} />
@@ -376,8 +426,8 @@ const ImageUpload: React.FC = () => {
                 value={empresaSel}
                 onChange={(e) => setEmpresaSel(e.target.value)}
               >
-                <option value="">Nombre empresa</option>
-                {EMPRESAS_FAKE.map((n) => (
+                <option value="">{loadingEmpresas ? "Cargando empresas…" : "Nombre empresa"}</option>
+                {empresas.map((n) => (
                   <option key={n} value={n}>
                     {n}
                   </option>
@@ -391,18 +441,16 @@ const ImageUpload: React.FC = () => {
               <select
                 id={idProyectoExist}
                 className={styles.select}
-                value={proyectoSel}
-                onChange={(e) => setProyectoSel(e.target.value)}
-                disabled={!empresaSel}
+                value={proyectoSelId}
+                onChange={(e) => setProyectoSelId(e.target.value)}
+                disabled={!empresaSel || loadingProyectos}
               >
-                <option value="">Nombre del proyecto</option>
-                {(empresaSel ? PROYECTOS_FAKE[empresaSel as keyof typeof PROYECTOS_FAKE] : []).map(
-                  (p) => (
-                    <option key={p} value={p}>
-                      {p}
-                    </option>
-                  )
-                )}
+                <option value="">{loadingProyectos ? "Cargando proyectos…" : "Nombre del proyecto"}</option>
+                {proyectosDeEmpresa.map((p) => (
+                  <option key={p.id} value={String(p.id)}>
+                    {p.nombre}
+                  </option>
+                ))}
               </select>
             </>
           ) : (
@@ -434,7 +482,7 @@ const ImageUpload: React.FC = () => {
           )}
 
           <button className={styles.nextButton} onClick={handleUploadAndNext} disabled={subiendo}>
-            {subiendo ? 'Subiendo…' : 'Siguiente'}
+            {subiendo ? "Subiendo…" : "Siguiente"}
           </button>
 
           {(errores.files || errores.empresa || errores.proyecto) && (

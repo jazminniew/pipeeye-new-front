@@ -1,11 +1,10 @@
-// src/pages/AnalyzeImages.tsx
-import React, { useEffect, useMemo, useState } from 'react';
-import { useDicomStore } from '../store/dicomStore';
-import Navbar from '../components/Navbar';
-import styles from '../styles/AnalyzeImages.module.css';
-import { apiFetch } from '../lib/api';
-import { useNavigate } from 'react-router-dom';
-import ModernViewer from '../components/ModernViewer';
+import React, { useEffect, useMemo, useState } from "react";
+import { useDicomStore } from "../store/dicomStore";
+import Navbar from "../components/Navbar";
+import styles from "../styles/AnalyzeImages.module.css";
+import { apiFetch } from "../lib/api";
+import { useNavigate } from "react-router-dom";
+import ModernViewer from "../components/ModernViewer";
 
 type Prediccion = {
   x1: number; y1: number; x2: number; y2: number;
@@ -13,98 +12,196 @@ type Prediccion = {
   categoria_nombre: string;
 };
 
-// Si usás Vite, definí tu base del API en .env => VITE_API_BASE_URL
-const API_BASE = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8000';
+type Clasificacion = "aprobado" | "dudoso" | "reprobado" | null;
+
+const LS_TASK_ID = "pipeeye.taskId";
+const LS_PROJECT_ID = "pipeeye.projectId";
+const lsKeyIdx = (taskId: string) => `pipeeye.currentIndex.${taskId}`;
+const lsKeyClasifs = (taskId: string) => `pipeeye.clasificaciones.${taskId}`;
+const lsKeyEstado = (taskId: string) => `pipeeye.lastEstado.${taskId}`;
+const lsKeyImgStatus = (projectId: string) => `pipeeye.imgStatus.${projectId}`;
+
+function readJSON<T>(key: string, fallback: T): T {
+  try {
+    const raw = localStorage.getItem(key);
+    if (!raw) return fallback;
+    return JSON.parse(raw) as T;
+  } catch {
+    return fallback;
+  }
+}
 
 const AnalyzeImages: React.FC = () => {
-  const previews = useDicomStore((s) => s.previews);   // [{ url, name, dicomId? }, ...]
-  const taskId   = useDicomStore((s) => s.taskId);
+  const previews = useDicomStore((s) => s.previews); // {name, url?}[]
+  const taskIdFromStore = useDicomStore((s) => s.taskId);
   const formInfo = useDicomStore((s) => s.formInfo);
 
-  const [estado, setEstado] = useState<'esperando...' | 'rechazado' | 'en revision' | 'aprobado' | string>('esperando...');
+  const projectId =
+    (formInfo as any)?.projectId ??
+    (formInfo as any)?.proyectoId ??
+    localStorage.getItem(LS_PROJECT_ID) ??
+    undefined;
+
+  const taskId = useMemo<string | undefined>(() => {
+    return taskIdFromStore ?? localStorage.getItem(LS_TASK_ID) ?? undefined;
+  }, [taskIdFromStore]);
+
+  const [estado, setEstado] = useState<string>(() => {
+    if (!taskId) return "esperando...";
+    return localStorage.getItem(lsKeyEstado(taskId)) ?? "esperando...";
+  });
   const [resultados, setResultados] = useState<Prediccion[][]>([]);
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [currentIndex, setCurrentIndex] = useState<number>(() => {
+    if (!taskId) return 0;
+    return Number(readJSON<number>(lsKeyIdx(taskId), 0)) || 0;
+  });
+  const [clasificaciones, setClasificaciones] = useState<Clasificacion[]>(() => {
+    if (!taskId) return [];
+    return readJSON<Clasificacion[]>(lsKeyClasifs(taskId), []);
+  });
+
   const navigate = useNavigate();
 
-  // Botón de estado (como lo tenías)
-  const renderEstadoBoton = () => {
-    switch (estado) {
-      case 'rechazado':  return <button className={styles.rechazado}>❌ Rechazado</button>;
-      case 'en revision':return <button className={styles.revision}>⚠️ En revisión</button>;
-      case 'aprobado':   return <button className={styles.aprobado}>✅ Aprobado</button>;
-      default:           return null;
-    }
-  };
+  // Persistencias base
+  useEffect(() => {
+    if (taskIdFromStore) localStorage.setItem(LS_TASK_ID, taskIdFromStore);
+  }, [taskIdFromStore]);
 
-  // Polling resultados
+  useEffect(() => {
+    if (projectId) localStorage.setItem(LS_PROJECT_ID, projectId);
+  }, [projectId]);
+
   useEffect(() => {
     if (!taskId) return;
-    const interval = setInterval(async () => {
+    localStorage.setItem(lsKeyIdx(taskId), JSON.stringify(currentIndex));
+  }, [currentIndex, taskId]);
+
+  useEffect(() => {
+    if (!taskId) return;
+    localStorage.setItem(lsKeyEstado(taskId), estado);
+  }, [estado, taskId]);
+
+  // Alinear tamaño de clasificaciones a previews
+  useEffect(() => {
+    if (!taskId) return;
+    if (!previews || previews.length === 0) return;
+    setClasificaciones((prev) => {
+      const next = prev.slice(0, previews.length);
+      while (next.length < previews.length) next.push(null);
+      return next;
+    });
+  }, [previews, taskId]);
+
+  useEffect(() => {
+    if (!taskId) return;
+    localStorage.setItem(lsKeyClasifs(taskId), JSON.stringify(clasificaciones));
+  }, [clasificaciones, taskId]);
+
+  // CLAMP del índice si cambió la cantidad (por reload)
+  useEffect(() => {
+    if (!previews) return;
+    if (currentIndex > 0 && currentIndex >= previews.length) {
+      setCurrentIndex(previews.length - 1);
+    }
+  }, [previews, currentIndex]);
+
+  // Polling
+  useEffect(() => {
+    if (!taskId) return;
+    let cancelled = false;
+
+    const tick = async () => {
       try {
         const data = await apiFetch<any>(`/tasks/${taskId}`);
-        if (data?.task?.estado) setEstado(data.task.estado);
+        if (cancelled) return;
+
+        if (data?.task?.estado) setEstado(String(data.task.estado));
 
         if (Array.isArray(data?.resultados)) {
-          const predPorImagen = data.resultados.map((item: any) =>
+          const predPorImagen: Prediccion[][] = data.resultados.map((item: any) =>
             Array.isArray(item?.predicciones) ? (item.predicciones as Prediccion[]) : []
           );
           setResultados(predPorImagen);
         }
-
-        if (data?.task?.estado === 'terminado') clearInterval(interval);
       } catch (error: any) {
-        console.error('Error polling:', error);
-        if (error?.message === 'UNAUTHORIZED') {
-          alert('Sesión expirada. Iniciá sesión de nuevo.');
-          clearInterval(interval);
-          navigate('/');
+        console.error("Error polling:", error);
+        if (error?.message === "UNAUTHORIZED") {
+          alert("Sesión expirada. Iniciá sesión de nuevo.");
+          navigate("/");
         }
       }
-    }, 6000);
-    return () => clearInterval(interval);
+    };
+
+    tick();
+    const interval = setInterval(tick, 6000);
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
   }, [taskId, navigate]);
 
+  // Guardar estado por imagen (para Radiografías)
+  const upsertImgStatus = (imgName: string, value: Exclude<Clasificacion, null>) => {
+    if (!projectId || !imgName) return;
+    const key = lsKeyImgStatus(projectId);
+    const map = readJSON<Record<string, Exclude<Clasificacion, null>>>(key, {});
+    map[imgName] = value;
+    localStorage.setItem(key, JSON.stringify(map));
+  };
+
+  // Navegación
   const handleNext = () => {
+    if (!previews || previews.length <= 1) return;
     if (currentIndex < previews.length - 1) setCurrentIndex((i) => i + 1);
   };
   const handlePrev = () => {
+    if (!previews || previews.length <= 1) return;
     if (currentIndex > 0) setCurrentIndex((i) => i - 1);
   };
 
-  const currentImage = previews[currentIndex];
-  const currentResultados = resultados[currentIndex] || [];
-
-  // ========= DESCARGA DICOM: ELEGÍ UNA DE ESTAS DOS OPCIONES =========
-
-  // Opción A) URL directa servida por tu backend (recomendado si ya la tenés)
-  // Ejemplos de endpoints que suelen ser cómodos:
-  //   GET /dicoms/{taskId}/{index} -> devuelve el .dcm
-  //   GET /dicoms/{dicomId}        -> devuelve el .dcm
-  // Armamos una URL si tenés dicomId o si tu API usa taskId+index:
-  const dicomUrl: string | undefined = useMemo(() => {
-    if (!taskId || !currentImage) return undefined;
-    // 1) Si tu preview trae un identificador DICOM específico:
-    // if (currentImage.dicomId) return `${API_BASE}/dicoms/${currentImage.dicomId}`;
-    // 2) Si tu backend expone por índice dentro del task:
-    return `${API_BASE}/dicoms/${encodeURIComponent(taskId)}/${currentIndex}`;
-  }, [taskId, currentImage, currentIndex]);
-
-  // Opción B) Fetch on-demand (no necesitás construir la URL exacta ni filename)
-  // El ModernViewer valida firma DICM y dispara la descarga con .dcm
-  const onRequestDicom = currentImage ? async (): Promise<Blob> => {
-    const r = await fetch(`${API_BASE}/dicoms/${encodeURIComponent(taskId || '')}/${currentIndex}`, {
-      // headers: { Authorization: `Bearer ${localStorage.getItem('token') ?? ''}` }
+  // Clasificación
+  const setClasificacionActual = (value: Exclude<Clasificacion, null>) => {
+    setClasificaciones((prev) => {
+      const next = prev.slice();
+      if (currentIndex >= 0) next[currentIndex] = value;
+      return next;
     });
-    if (!r.ok) throw new Error(`No se pudo obtener DICOM (${r.status})`);
-    const blob = await r.blob();
-    return blob; // ModernViewer valida "DICM" y dispara la descarga
-  } : undefined;
+    const imgName = previews?.[currentIndex]?.name ?? `Imagen ${currentIndex + 1}`;
+    upsertImgStatus(imgName, value);
+  };
 
-  // Nombre del archivo a descargar (si querés algo prolijo)
-  const downloadFileName = useMemo(() => {
-    const base = (currentImage?.name || `estudio_${currentIndex}`).replace(/\s+/g, '_').replace(/[^\w.-]/g, '');
-    return `${base}.dcm`;
-  }, [currentImage, currentIndex]);
+  // Continuar / Finalizar → Radiografías del proyecto
+  const goRadiografias = () => {
+    if (projectId) navigate(`/radiografias/${projectId}`);
+    else navigate(`/radiografias`);
+  };
+  const handleContinuar = () => {
+    if (!previews || previews.length === 0) {
+      goRadiografias();
+      return;
+    }
+    if (currentIndex < previews.length - 1) {
+      setCurrentIndex((i) => i + 1);
+    } else {
+      // última
+      goRadiografias();
+    }
+  };
+
+  // Derivados
+  const currentImage = previews?.[currentIndex];
+  const currentResultados = resultados?.[currentIndex] || [];
+  const clasifActual: Clasificacion = clasificaciones?.[currentIndex] ?? null;
+
+  const renderEstadoBadge = () => {
+    const v = (estado || "").toLowerCase();
+    if (v.includes("rechaz")) return <span className={styles.rechazado}>❌ Rechazado</span>;
+    if (v.includes("revis")) return <span className={styles.revision}>⚠️ En revisión</span>;
+    if (v.includes("aprob")) return <span className={styles.aprobado}>✅ Aprobado</span>;
+    return <span className={styles.estadoAnalisis}>{estado || "..."}</span>;
+  };
+
+  const hayUnaSola = (previews?.length ?? 0) <= 1;
 
   return (
     <div className={styles.body}>
@@ -113,53 +210,82 @@ const AnalyzeImages: React.FC = () => {
         <div className={styles.imageSection}>
           <div className={styles.imageBox}>
             <div className={styles.title}>
-              <span>{currentImage?.name || 'Sin nombre'}</span>
-              <span className={styles.estadoAnalisis}>{estado}</span>
+              <span>{currentImage?.name || `Imagen ${currentIndex + 1}`}</span>
+              {renderEstadoBadge()}
             </div>
 
             <div className={styles.imageViewer}>
-              <ModernViewer
-                src={currentImage?.url}
-                className={styles.imageViewer}
-                rotate={-90}
-                dicomBlob={currentImage?.file}   
-                // === Activa botón "Descargar DICOM" ===
-                // Elegí UNA: dicomUrl (A) o onRequestDicom (B). Podés pasar ambas: prioriza blob/url y luego onRequest.
-                dicomUrl={dicomUrl}
-                onRequestDicom={onRequestDicom}
-                downloadFileName={downloadFileName}
-              >
-                {/* Marcadores: seguimos tu lógica actual (coordenadas “aprox.” sobre el overlay) */}
-                {currentResultados.map((r, i) => {
-                  const x3 = r.x1 + (r.x2 - r.x1) / 2;
-                  const y3 = r.y1 + (r.y2 - r.y1) / 2;
-                  return (
-                    <div
-                      key={i}
-                      className={styles.marker}
-                      style={{
-                        left: x3 * 0.3,  // tu escala actual
-                        top:  y3 * 0.3,
-                        position: "absolute",
-                      }}
-                    >
-                      {r.categoria_nombre}
-                    </div>
-                  );
-                })}
-              </ModernViewer>
+              {currentImage?.url ? (
+                <ModernViewer src={currentImage.url} className={styles.imageViewer} rotate={-90}>
+                  {currentResultados.map((r, i) => {
+                    const x3 = r.x1 + (r.x2 - r.x1) / 2;
+                    const y3 = r.y1 + (r.y2 - r.y1) / 2;
+                    return (
+                      <div
+                        key={i}
+                        className={styles.marker}
+                        style={{ left: x3 * 0.3, top: y3 * 0.3, position: "absolute" }}
+                      >
+                        {r.categoria_nombre}
+                      </div>
+                    );
+                  })}
+                </ModernViewer>
+              ) : (
+                <div className={styles.viewerPlaceholder}>
+                  <p>
+                    Vista previa no disponible tras recargar.
+                    {taskId ? " El análisis sigue en curso." : "" }
+                  </p>
+                </div>
+              )}
             </div>
 
-            <div className={styles.statusRow}>{renderEstadoBoton()}</div>
+            {/* Clasificación */}
+            <div className={styles.statusRow}>
+              <button
+                className={`${styles.tagBtn} ${clasifActual === "aprobado" ? styles.tagActiveAprobado : ""}`}
+                onClick={() => setClasificacionActual("aprobado")}
+              >
+                ✅ Aprobado
+              </button>
+              <button
+                className={`${styles.tagBtn} ${clasifActual === "dudoso" ? styles.tagActiveDudoso : ""}`}
+                onClick={() => setClasificacionActual("dudoso")}
+              >
+                ⚠️ Dudoso
+              </button>
+              <button
+                className={`${styles.tagBtn} ${clasifActual === "reprobado" ? styles.tagActiveReprobado : ""}`}
+                onClick={() => setClasificacionActual("reprobado")}
+              >
+                ❌ Reprobado
+              </button>
+            </div>
+
+            {/* Continuar / Finalizar */}
+            <div className={styles.continueRow}>
+              <button className={styles.continueBtn} onClick={handleContinuar}>
+                {currentIndex < (previews?.length ?? 0) - 1 ? "Continuar →" : "Finalizar"}
+              </button>
+            </div>
           </div>
 
+          {/* Navegación */}
           <div className={styles.navigationButtons}>
-            <button onClick={handlePrev} disabled={currentIndex === 0}>← Anterior</button>
-            <button onClick={handleNext} disabled={currentIndex === previews.length - 1}>Siguiente →</button>
+            <button onClick={handlePrev} disabled={hayUnaSola || currentIndex === 0}>
+              ← Anterior
+            </button>
+            <button
+              onClick={handleNext}
+              disabled={hayUnaSola || !previews || currentIndex === previews.length - 1}
+            >
+              Siguiente →
+            </button>
           </div>
 
+          {/* Info */}
           <div className={styles.infoGrid}>
-            {/* TABLA DEFECTOS */}
             <div className={styles.infoBox}>
               <h3>Información defectos</h3>
               <table className={styles.table}>
@@ -200,9 +326,8 @@ const AnalyzeImages: React.FC = () => {
               </table>
             </div>
 
-            {/* TABLA EMPRESA */}
             <div className={styles.infoBox}>
-              <h3>Información empresa</h3>
+              <h3>Información</h3>
               <table className={styles.table}>
                 <thead>
                   <tr>
@@ -212,18 +337,22 @@ const AnalyzeImages: React.FC = () => {
                 </thead>
                 <tbody>
                   <tr>
-                    <td>Cliente</td>
-                    <td>{formInfo?.cliente || '---'}</td>
+                    <td>Empresa</td>
+                    <td>{formInfo?.cliente || "---"}</td>
                   </tr>
                   <tr>
                     <td>Proyecto</td>
-                    <td>{formInfo?.proyecto || '---'}</td>
+                    <td>{formInfo?.proyecto || "---"}</td>
+                  </tr>
+                  <tr>
+                    <td>Imagen</td>
+                    <td>{previews?.[currentIndex]?.name || `Imagen ${currentIndex + 1}`}</td>
                   </tr>
                 </tbody>
               </table>
             </div>
           </div>
-
+          {/* /infoGrid */}
         </div>
       </div>
     </div>

@@ -271,7 +271,6 @@ const ModernViewer: React.FC<Props> = ({
   const scaleX = totalScale * (flipH ? -1 : 1);
   const scaleY = totalScale * (flipV ? -1 : 1);
 
-  
   return (
     <div
       ref={wrapRef}

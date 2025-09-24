@@ -194,3 +194,17 @@
   cursor: not-allowed;
   opacity: 0.5;
 }
+
+.viewerPlaceholder { display:flex; align-items:center; justify-content:center; min-height:420px; border:1px dashed #444; border-radius:12px; padding:16px; text-align:center; }
+
+.tagBtn { border:1px solid #444; background:#111; padding:8px 12px; border-radius:10px; cursor:pointer; margin-right:8px; }
+.tagActiveAprobado { outline:2px solid #19c37d; }
+.tagActiveDudoso { outline:2px solid #f5a623; }
+.tagActiveReprobado { outline:2px solid #ef4444; }
+
+.continueRow { margin-top:12px; display:flex; justify-content:flex-end; }
+.continueBtn { padding:10px 16px; border-radius:12px; border:none; cursor:pointer; font-weight:600; }
+
+.aprobado { color:#19c37d; }
+.revision { color:#f5a623; }
+.rechazado { color:#ef4444; }

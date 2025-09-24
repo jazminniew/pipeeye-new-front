@@ -1,0 +1,72 @@
+/* Lista vertical con filas estiradas */
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-md);
+}
+
+/* Fila: thumb | info (grow) | botón */
+.row {
+  display: grid;
+  grid-template-columns: 64px 1fr auto;
+  align-items: center;
+  gap: var(--gap-md);
+  padding: 16px 20px;
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--blanco) 6%, transparent);
+  border: 1px solid color-mix(in srgb, var(--blanco) 12%, transparent);
+  transition: background .16s ease, border-color .16s ease, transform .12s ease;
+}
+.row:hover {
+  background: color-mix(in srgb, var(--blanco) 10%, transparent);
+  border-color: color-mix(in srgb, var(--color-primario) 40%, transparent);
+  transform: translateY(-1px);
+}
+
+/* placeholder azul para la imagen futura */
+.thumb {
+  width: 64px;
+  height: 64px;
+  border-radius: 12px;
+  background: linear-gradient(180deg, var(--color-primario), color-mix(in srgb, var(--color-primario) 70%, #0b1220));
+  box-shadow: 0 8px 22px color-mix(in srgb, var(--color-primario) 35%, transparent);
+}
+
+/* centro */
+.info { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--blanco);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.meta {
+  margin: 0;
+  font-size: 13px;
+  color: var(--texto-secundario);
+  display: flex; align-items: center; gap: 10px;
+}
+.dot { width: 6px; height: 6px; border-radius: 999px; background: color-mix(in srgb, var(--blanco) 55%, transparent); opacity: .6; }
+
+/* botón: anula el width:100% de History.btn */
+.btnInline {
+  width: auto !important;
+  min-width: 160px;
+  justify-self: end;
+}
+
+/* pill de estado */
+.pill {
+  padding: 4px 8px;
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid color-mix(in srgb, var(--blanco) 18%, transparent);
+  background: color-mix(in srgb, var(--blanco) 6%, transparent);
+  color: var(--blanco);
+}
+.pill_analizado { background: color-mix(in srgb, var(--color-primario) 16%, transparent); border-color: color-mix(in srgb, var(--color-primario) 36%, transparent); }
+.pill_en_proceso { background: color-mix(in srgb, #f0b429 20%, transparent); border-color: color-mix(in srgb, #f0b429 36%, transparent); color: #fff7e0; }
+.pill_pendiente { background: color-mix(in srgb, var(--blanco) 10%, transparent); }
+.pill_error { background: color-mix(in srgb, #ea3d4b 22%, transparent); border-color: color-mix(in srgb, #ea3d4b 36%, transparent); }

@@ -12,6 +12,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { API_URL } from "@/lib/api";
+import { getUsuarioById, getUserIdFromToken } from "@/services/api";
 
 export function LoginForm({
   className,
@@ -57,16 +58,31 @@ export function LoginForm({
         return;
       }
 
-      const data = await res.json(); // { access_token, token_type }
-      if (!data?.access_token) {
-        setErrorMsg("El servidor no devolvió el token.");
-        return;
-      }
+      const data = await res.json(); // ← debería traer { access_token, token_type, id }
+if (!data?.access_token) { setErrorMsg("El servidor no devolvió el token."); return; }
 
-      localStorage.setItem("access_token", data.access_token);
-      localStorage.setItem("token_type", data.token_type || "bearer");
+// limpiar sesión vieja
+["user_id","user_nombre","user_apellido","user_mail","user_jerarquia"].forEach(k => localStorage.removeItem(k));
 
-      navigate("/dashboard");
+// guardar token + username tipeado
+localStorage.setItem("access_token", data.access_token);
+localStorage.setItem("token_type", (data.token_type || "bearer").toLowerCase());
+localStorage.setItem("username", username);
+
+// ✅ usar el id que vino en el login (en vez de parsear el JWT)
+if (typeof data.id === "number") {
+  localStorage.setItem("user_id", String(data.id));
+  try {
+    const me = await getUsuarioById(data.id); // GET /usuarios/{id}
+    localStorage.setItem("user_nombre", me.nombre || "");
+    localStorage.setItem("user_apellido", me.apellido || "");
+    localStorage.setItem("user_mail", me.mail || "");
+    localStorage.setItem("user_jerarquia", me.jerarquia || "");
+  } catch { /* si falla, Topbar mostrará “Cargando…” */ }
+}
+
+navigate("/dashboard");
+
     } catch {
       setErrorMsg("No se pudo conectar con el servidor.");
     } finally {
@@ -76,7 +92,6 @@ export function LoginForm({
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
-      {/* Glass + borde MUY sutil gris oscuro */}
       <Card className="bg-black/30 backdrop-blur-3xl backdrop-saturate-150 border border-white/30 text-white shadow-[0_18px_48px_-12px_rgba(0,0,0,0.55)]">
         <CardHeader>
           <CardTitle className="text-white">Inicia sesión en tu cuenta</CardTitle>
@@ -150,9 +165,9 @@ export function LoginForm({
               <div className="mt-2 text-center text-sm text-white/80">
                 ¿No tienes una cuenta?{" "}
                 <a
-                    onClick={() => navigate("/contacto")}
-                    className="cursor-pointer text-[#66b2ff] hover:text-[#8cc7ff] underline underline-offset-4"
-                  >
+                  onClick={() => navigate("/contacto")}
+                  className="cursor-pointer text-[#66b2ff] hover:text-[#8cc7ff] underline underline-offset-4"
+                >
                   Solicitá acceso
                 </a>
               </div>
