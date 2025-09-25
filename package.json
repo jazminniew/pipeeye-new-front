@@ -3,12 +3,13 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "scripts": {
-    "dev": "vite",
-    "build": "¿vite build",
-    "lint": "eslint .",
-    "preview": "vite preview"
-  },
+"scripts": {
+  "dev": "vite",
+  "build": "vite build",
+  "lint": "eslint .",
+  "preview": "vite preview",
+  "vercel-build": "vite build"     
+},
   "dependencies": {
     "@cornerstonejs/core": "^4.2.3",
     "@cornerstonejs/dicom-image-loader": "^4.2.3",
